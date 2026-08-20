@@ -3,5 +3,10 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ConsoleGame/ConsoleGame.vcxproj" />
+  <Project Path="ConsoleGame/ConsoleGame.vcxproj" Id="cf1b9928-72a4-40a6-8785-8da0d9947156">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="CraftEngine/CraftEngine.vcxproj" Id="77d3509e-5f97-4a46-8eab-e7abe27e500c">
+    <Platform Project="x64" />
+  </Project>
 </Solution>
