@@ -1,0 +1,124 @@
+﻿#pragma once
+
+#include <Core/Core.h>
+#include <Core/CraftObject.h>
+#include <Math/Vector2.h>
+#include <Math/Color.h>
+#include <Physics/Bounds.h>
+#include <Utility/ActorTags.h>
+
+#include <memory>
+#include <string>
+#include <cmath>
+#include <vector>
+
+namespace Craft
+{
+	// 전방 선언.
+	class Level;
+
+	class CRAFT_API Actor : public CraftObject
+	{
+		// 타입 정보 설정을 위한 매크로 추가.
+		TYPE_DECLARATIONS(Actor, CraftObject)
+
+	public:
+		Actor(const std::vector<std::string>& image, const Vector2F& position = Vector2F::Zero, Utility::ActorTags actorTag = Utility::ActorTags::None,
+			Color color = Color::White, BackgroundColor backColor = BackgroundColor::Black, const Vector2F& pivot = Vector2F::Zero);
+		virtual ~Actor();
+
+		// 프레임 이벤트 함수.
+		virtual void BeginPlay();
+		virtual void Tick(float deltaTime);
+		virtual void Draw();
+
+		// 충돌 시 호출될 충돌 이벤트 함수.
+		virtual void OnCollision(const std::shared_ptr<Actor>& other);
+
+		// 액터의 이미지(문자열) 값 변경.
+		void ChangeImage(const std::vector<std::string>& newImage)
+		{
+			// 새로운 문자열 복사.
+			width = static_cast<int>(newImage.size());
+			image = newImage;
+		}
+
+		// 액터를 레벨에서 제거할 때 사용할 함수.
+		void Destroy();
+
+		// 게임(엔진) 종료 요청 함수.
+		void QuitGame();
+
+		// 프레임 종료 후 현재 위치를 이전 위치로 저장하는 함수
+		void SavePreviousState();
+
+		// Getter / Setter
+		inline bool HasBeganPlay() const { return hasBeganPlay; }
+		inline bool IsActive() const { return isActive && !hasExpired; }
+		inline bool HasExpired() const { return hasExpired; }
+
+		inline std::shared_ptr<Level> GetOwner() const { return owner.lock(); }
+		inline void SetOwner(std::weak_ptr<Level> newOwner) { owner = newOwner; }
+
+		inline Vector2F GetPosition() const { return position; }
+		void SetPosition(const Vector2F& newPosition);
+
+		inline Vector2F GetPivot() const { return pivot; }
+
+		// 이전 위치 반환 함수
+		inline Vector2F GetPreviousPosition() const { return previousPosition; }
+
+		// 액터의 문자열 너비 반환 함수.
+		inline int GetWidth() const { return width; }
+		inline int GetHeight() const { return height; }
+
+		inline Bounds GetBounds() const;
+		inline Utility::ActorTags GetActorTag() const { return actorTag; }
+
+	protected:
+		bool IsSameGrid(const std::shared_ptr<Actor>& other) const;
+
+
+	protected:
+		// BeginPlay 이벤트 처리 여부 플래그.
+		bool hasBeganPlay = false;
+
+		// 액터 활성화 여부 플래그
+		bool isActive = true;
+
+		// 액터 삭제 예약 설정 플래그
+		bool hasExpired = false;
+
+		// 오너쉽 - 액터를 소유하는 레벨 객체
+		// weak_ptr -> 약참조 -> 실제 사용을 위해서는 해당위치가 유효한지 확인해야 함
+		std::weak_ptr<Level> owner;
+
+		// 화면에 그릴 글자(이미지).
+		std::vector<std::string> image;
+
+		// 글자 색상.
+		Color color = Color::White;
+
+		BackgroundColor backColor = BackgroundColor::White;
+
+		// 글자 길이.
+		int width = 0;
+		int height = 0;
+
+		// 2중 버퍼링 할때 추가할것
+		// 그리기 정렬 순서.
+		int sortingOrder = 0;
+
+		// 액터 위치.
+		Vector2F position;
+
+		// 피벗 위치
+		Vector2F pivot;
+
+		// 이전 프레임 액터 위치
+		Vector2F previousPosition;
+
+		// 액터의 태그
+		Utility::ActorTags actorTag = Utility::ActorTags::None;
+	};
+}

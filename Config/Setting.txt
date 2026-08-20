@@ -1,0 +1,14 @@
+# target frame rate
+framerate = 120
+
+# screen width
+width = 120
+
+# screen height
+height = 60
+
+# game viewport width
+viewportwidth = 60
+
+# game viewport height
+viewportheight = 20
