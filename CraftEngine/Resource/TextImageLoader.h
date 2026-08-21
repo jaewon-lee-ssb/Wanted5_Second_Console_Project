@@ -10,6 +10,6 @@ namespace Craft
     class CRAFT_API TextImageLoader
     {
     public:
-        static PixelImage Load(const std::string& path);
+        static PixelImage Load(const std::string& filename);
     };
 }

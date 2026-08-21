@@ -70,7 +70,7 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
     <PreBuildEvent>
-      <Command>xcopy ..\Contents\* $(OutDir)..\Assets\ /e /y /i</Command>
+      <Command>xcopy ..\Contents\* $(OutDir)..\Contents\ /e /y /i</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy ..\Library\CraftEngine\$(Configuration)\CraftEngine.dll $(OutDir)\ /e /y /i</Command>
@@ -97,7 +97,7 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
     <PreBuildEvent>
-      <Command>xcopy ..\Contents\* $(OutDir)..\Assets\ /e /y /i</Command>
+      <Command>xcopy ..\Contents\* $(OutDir)..\Contents\ /e /y /i</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy ..\Library\CraftEngine\$(Configuration)\CraftEngine.dll $(OutDir)\ /e /y /i</Command>

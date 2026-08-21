@@ -113,6 +113,7 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i </Command>
     <ClCompile Include="Physics\CollisionSystem.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
     <ClCompile Include="Render\ScreenBuffer.cpp" />
+    <ClCompile Include="Resource\TextImageLoader.cpp" />
     <ClCompile Include="UIManager\UIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
