@@ -1,0 +1,7 @@
+interface:
+  display_name: "GitHub → Notion 작업 기록"
+  short_description: "오늘의 Git 커밋을 Notion 작업 트래커에 기록"
+  default_prompt: "Use $github-to-notion-worklog to summarize today's pushed Git work and add it to my second-project Notion tracker."
+
+policy:
+  allow_implicit_invocation: true
