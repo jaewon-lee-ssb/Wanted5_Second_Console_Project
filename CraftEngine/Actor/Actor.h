@@ -24,7 +24,7 @@ namespace Craft
 		TYPE_DECLARATIONS(Actor, CraftObject)
 
 	public:
-		Actor(const PixelImage& image, const Vector2F& position = Vector2F::Zero, Utility::ActorTags actorTag = Utility::ActorTags::None, const Vector2F& pivot = Vector2F::Zero);
+		Actor(const PixelImage& image, const Vector2F& position = Vector2F::Zero, Utility::ActorTags actorTag = Utility::ActorTags::None);
 		virtual ~Actor();
 
 		// 프레임 이벤트 함수.

@@ -10,8 +10,8 @@
 
 namespace Craft
 {
-	Actor::Actor(const PixelImage& image, const Vector2F& position, Utility::ActorTags actorTag, const Vector2F& pivot)
-		: image(image), position(position), pivot(pivot), actorTag(actorTag)
+	Actor::Actor(const PixelImage& image, const Vector2F& position, Utility::ActorTags actorTag)
+		: image(image), position(position), actorTag(actorTag), pivot(Vector2F(image.width / 2, image.height / 2))
 	{
 
 	}

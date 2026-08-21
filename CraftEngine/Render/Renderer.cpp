@@ -40,9 +40,9 @@ namespace Craft
 				// 빈문자 설정 - 기존의 설정된 값 지우기
 				info.Char.AsciiChar = ' ';
 				// 색상 표기 안함
-				//info.Attributes = 0;
+				info.Attributes = 0;
 				
-				if(x%2==0)
+				/*if(x%2==0)
 					info.Attributes = static_cast<WORD>(BackgroundColor::LightGreen);
 				else
 					info.Attributes = static_cast<WORD>(BackgroundColor::White);
@@ -53,7 +53,7 @@ namespace Craft
 					info.Attributes = static_cast<WORD>(BackgroundColor::Black);
 
 				if(y == 0 || x == 0 || x == width-1 || y == height -1)
-					info.Attributes = static_cast<WORD>(BackgroundColor::Red);
+					info.Attributes = static_cast<WORD>(BackgroundColor::Red);*/
 
 				// 그리기 순서 배열 항목 초기화
 				sortingOrderArray[index] = -1;

@@ -1,4 +1,4 @@
-#include <Resource/TextImageLoader.h>
+﻿#include <Resource/TextImageLoader.h>
 
 #include <fstream>
 #include <cassert>
@@ -25,6 +25,11 @@ namespace Craft
 		// 파일 전체 크기 확인.
 		file.seekg(0, std::ios_base::end);
 		const std::streampos fileSize = file.tellg();
+
+		if (fileSize <= 0)
+		{
+			return PixelImage{};
+		}
 
 		// 파일 위치를 첫 위치로 되돌리기.
 		file.seekg(0, std::ios_base::beg);

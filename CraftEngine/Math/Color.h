@@ -61,7 +61,7 @@ namespace Craft
         White = Red | Green | Blue | BACKGROUND_INTENSITY,
     };
 
-    BackgroundColor ParseColor(char ch)
+    inline BackgroundColor ParseColor(char ch)
     {
         int value = 0;
 
