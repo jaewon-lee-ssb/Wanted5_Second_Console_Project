@@ -7,10 +7,10 @@
 
 namespace Craft
 {
-    struct CRAFT_API PixelSprite
+    struct CRAFT_API PixelImage
     {
-        int Width;
-        int Height;
+        int width = 0;
+        int height = 0;
         std::vector<Craft::Color> Pixels;
     };
 }

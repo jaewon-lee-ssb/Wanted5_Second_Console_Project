@@ -101,10 +101,10 @@
     <ClInclude Include="UIManager\UIElement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\PixelSprite.h">
+    <ClInclude Include="Resource\PixelImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\TextSpriteLoader.h">
+    <ClInclude Include="Resource\TextImageLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
