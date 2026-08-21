@@ -97,19 +97,12 @@ namespace Craft
 		SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	}
 
-	void Renderer::SubmitWorld(const std::string& image, const Vector2F& position, Color color, BackgroundColor backColor, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
-	{
-		SubmitWorld(std::vector<std::string>{ image }, position, color, backColor, pivot, sortingOrder, renderSpace);
-	}
-
-	void Renderer::SubmitWorld(const std::vector<std::string>& image, const Vector2F& position, Color color, BackgroundColor backColor, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
+	void Renderer::SubmitWorld(const PixelImage& image, const Vector2F& position, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
 	{
 		// 그럼 명령 객체 생성.
 		RenderCommand command;
 		command.image = image;
 		command.position = position;
-		command.color = color;
-		command.backColor = backColor;
 		command.pivot = pivot;
 		command.sortingOrder = sortingOrder;
 		command.renderSpace = renderSpace;
@@ -118,19 +111,12 @@ namespace Craft
 		renderQueue.emplace_back(command);
 	}
 
-	void Renderer::SubmitUI(const std::string& image, const Vector2F& position, Color color, BackgroundColor backColor, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
-	{
-		SubmitUI(std::vector<std::string>{ image }, position, color, backColor, pivot, sortingOrder, renderSpace);
-	}
-
-	void Renderer::SubmitUI(const std::vector<std::string>& image, const Vector2F& position, Color color, BackgroundColor backColor, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
+	void Renderer::SubmitUI(const PixelImage& image, const Vector2F& position, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
 	{
 		// 그럼 명령 객체 생성.
 		RenderCommand command;
 		command.image = image;
 		command.position = position;
-		command.color = color;
-		command.backColor = backColor;
 		command.pivot = pivot;
 		command.sortingOrder = sortingOrder;
 		command.renderSpace = renderSpace;
@@ -173,41 +159,37 @@ namespace Craft
 		for (const RenderCommand& command : renderQueue)
 		{
 			// 그릴 문자열이 없으면 건너뛰기.
-			if (command.image.empty())
+			if (command.image.pixels.empty())
 			{
 				continue;
 			}
 
-			const Vector2I& drawSize = command.renderSpace == RenderSpace::World ? viewportSize : screenSize;
+			//const Vector2I& drawSize = command.renderSpace == RenderSpace::World ? viewportSize : screenSize;
+			const Vector2I& drawSize = screenSize;
 
-			const int startX = static_cast<int>(std::floor(command.position.x - command.pivot.x));
-			const int startY = static_cast<int>(std::floor(command.position.y - command.pivot.y));
+			const int startX = static_cast<int>(command.position.x - command.pivot.x);
+			const int startY = static_cast<int>(command.position.y - command.pivot.y);
 
-			for (int localY = 0; localY < static_cast<int>(command.image.size()); ++localY)
+			for (int localY = 0; localY < command.image.height; ++localY)
 			{
-				const std::string& row = command.image[localY];
-				const int screenY = startY + localY;
-
-				if (screenY < 0 || screenY >= drawSize.y)
+				for (int localX = 0; localX < command.image.width; ++localX)
 				{
-					continue;
-				}
+					const Pixel& pixel = command.image.At(localX, localY);
 
-				for (int localX = 0; localX < static_cast<int>(row.length()); ++localX)
-				{
+					// 픽셀이 투명하면 스킵
+					if (pixel.transparent)
+					{
+						continue;
+					}
+
 					const int screenX = startX + localX;
+					const int screenY = startY + localY;
 
-					if (screenX < 0 || screenX >= drawSize.x)
+					if (screenX < 0 || screenX >= drawSize.x || screenY < 0 || screenY >= drawSize.y)
 					{
 						continue;
 					}
-
-					char ch = row[localX];
-
-					if (ch == ' ')
-					{
-						continue;
-					}
+					
 
 					const int index = (screenY * screenSize.x) + screenX;
 
@@ -216,8 +198,8 @@ namespace Craft
 						continue;
 					}
 
-					frame->charInfoArray[index].Char.AsciiChar = ch;
-					frame->charInfoArray[index].Attributes = static_cast<WORD>(command.color) | static_cast<WORD>(command.backColor);
+					frame->charInfoArray[index].Char.AsciiChar = ' ';
+					frame->charInfoArray[index].Attributes = static_cast<WORD>(pixel.color);
 					frame->sortingOrderArray[index] = command.sortingOrder;
 				}
 			}

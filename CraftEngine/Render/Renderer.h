@@ -3,6 +3,7 @@
 #include <Core/Core.h>
 #include <Math/Vector2.h>
 #include <Math/Color.h>
+#include <Resource/PixelImage.h>
 
 #include <vector>
 #include <string>
@@ -25,9 +26,10 @@ namespace Craft
 		// 화면에 그릴 데이터를 명령으로 모아둘 구조체
 		struct RenderCommand
 		{
-			// 화면에 그릴 글자 값.
+			// 화면에 그릴 색상 이미지 값.
 			//std::string image;
-			std::vector<std::string> image;
+			//std::vector<std::string> image;
+			PixelImage image;
 
 			// 위치.
 			Vector2F position = Vector2F::Zero;
@@ -36,10 +38,10 @@ namespace Craft
 			Vector2F pivot = Vector2F::Zero;
 
 			// 색상.
-			Color color = Color::White;
+			//Color color = Color::White;
 
 			// 배경 색상.
-			BackgroundColor backColor = BackgroundColor::Black;
+			//BackgroundColor backColor = BackgroundColor::Black;
 
 			// 그리기 정렬 순서. 값이 크면 우선순위가 높음.
 			int sortingOrder = -1;
@@ -69,14 +71,10 @@ namespace Craft
 		~Renderer();
 
 		// 장면을 구성하는 모든 객체(액터)가 화면에 그릴 데이터를 전달하는 함수.
-		void SubmitWorld(const std::string& image, const Vector2F& position, Color color = Color::White, BackgroundColor backColor = BackgroundColor::Black,
-			const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, RenderSpace renderSpace = RenderSpace::World);
-		void SubmitWorld(const std::vector<std::string>& image, const Vector2F& position, Color color = Color::White, BackgroundColor backColor = BackgroundColor::Black,
-			const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, RenderSpace renderSpace = RenderSpace::World);
-		void SubmitUI(const std::string& image, const Vector2F& position, Color color = Color::White, BackgroundColor backColor = BackgroundColor::Black,
-			const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, RenderSpace renderSpace = RenderSpace::Screen);
-		void SubmitUI(const std::vector<std::string>& image, const Vector2F& position, Color color = Color::White, BackgroundColor backColor = BackgroundColor::Black,
-			const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, RenderSpace renderSpace = RenderSpace::Screen);
+		void SubmitWorld(const PixelImage& image, const Vector2F& position, const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, RenderSpace renderSpace = RenderSpace::World);
+		
+		void SubmitUI(const PixelImage& image, const Vector2F& position, const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 10000, RenderSpace renderSpace = RenderSpace::Screen);
+		
 
 		// Draw 이벤트 함수(Engine에서 호출)
 		void Draw();

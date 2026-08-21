@@ -6,6 +6,7 @@
 #include <Math/Color.h>
 #include <Physics/Bounds.h>
 #include <Utility/ActorTags.h>
+#include <Resource/PixelImage.h>
 
 #include <memory>
 #include <string>
@@ -23,8 +24,7 @@ namespace Craft
 		TYPE_DECLARATIONS(Actor, CraftObject)
 
 	public:
-		Actor(const std::vector<std::string>& image, const Vector2F& position = Vector2F::Zero, Utility::ActorTags actorTag = Utility::ActorTags::None,
-			Color color = Color::White, BackgroundColor backColor = BackgroundColor::Black, const Vector2F& pivot = Vector2F::Zero);
+		Actor(const PixelImage& image, const Vector2F& position = Vector2F::Zero, Utility::ActorTags actorTag = Utility::ActorTags::None, const Vector2F& pivot = Vector2F::Zero);
 		virtual ~Actor();
 
 		// 프레임 이벤트 함수.
@@ -35,12 +35,10 @@ namespace Craft
 		// 충돌 시 호출될 충돌 이벤트 함수.
 		virtual void OnCollision(const std::shared_ptr<Actor>& other);
 
-		// 액터의 이미지(문자열) 값 변경.
-		void ChangeImage(const std::vector<std::string>& newImage)
+		// 액터의 이미지 변경.
+		void ChangeImage(const PixelImage& newImage)
 		{
-			// 새로운 문자열 복사.
-			width = newImage.empty() ? 0 : static_cast<int>(newImage[0].length());
-			height = static_cast<int>(newImage.size());
+			// 새로운 이미지로 교체
 			image = newImage;
 		}
 
@@ -70,8 +68,8 @@ namespace Craft
 		inline Vector2F GetPreviousPosition() const { return previousPosition; }
 
 		// 액터의 문자열 너비 반환 함수.
-		inline int GetWidth() const { return width; }
-		inline int GetHeight() const { return height; }
+		inline int GetWidth() const { return image.width; }
+		inline int GetHeight() const { return image.height; }
 
 		inline Bounds GetBounds() const;
 		inline Utility::ActorTags GetActorTag() const { return actorTag; }
@@ -95,16 +93,7 @@ namespace Craft
 		std::weak_ptr<Level> owner;
 
 		// 화면에 그릴 글자(이미지).
-		std::vector<std::string> image;
-
-		// 글자 색상.
-		Color color = Color::White;
-
-		BackgroundColor backColor = BackgroundColor::White;
-
-		// 글자 길이.
-		int width = 0;
-		int height = 0;
+		PixelImage image;
 
 		// 2중 버퍼링 할때 추가할것
 		// 그리기 정렬 순서.
@@ -120,6 +109,6 @@ namespace Craft
 		Vector2F previousPosition;
 
 		// 액터의 태그
-		Utility::ActorTags actorTag = Utility::ActorTags::None;
+		Utility::ActorTags actorTag;
 	};
 }

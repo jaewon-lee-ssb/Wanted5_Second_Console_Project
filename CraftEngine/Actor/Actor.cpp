@@ -3,13 +3,15 @@
 #include <Level/Level.h>
 #include <Render/Renderer.h>
 #include <Camera/Camera.h>
+#include <Resource/PixelImage.h>
+
+#include <Resource/TextImageLoader.h>
 
 
 namespace Craft
 {
-	Actor::Actor(const std::vector<std::string>& image, const Vector2F& position, Utility::ActorTags actorTag, Color color, BackgroundColor backColor, const Vector2F& pivot)
-		: image(image), position(position), color(color), backColor(backColor), pivot(pivot), actorTag(actorTag),
-		width(image.empty() ? 0 : static_cast<int>(image[0].length())), height(static_cast<int>(image.size()))
+	Actor::Actor(const PixelImage& image, const Vector2F& position, Utility::ActorTags actorTag, const Vector2F& pivot)
+		: image(image), position(position), pivot(pivot), actorTag(actorTag)
 	{
 
 	}
@@ -41,7 +43,7 @@ namespace Craft
 		// 렌더러에 그릴 데이터 전달.
 		if(GetOwner()->GetCamera())
 		{ 
-			Renderer::Get().SubmitWorld(image, GetOwner()->GetCamera()->WorldToScreen(position), color, backColor, pivot, sortingOrder);
+			Renderer::Get().SubmitWorld(image, GetOwner()->GetCamera()->WorldToScreen(position), pivot, sortingOrder);
 		}
 	}
 
@@ -84,7 +86,7 @@ namespace Craft
 		const float left = std::floor(position.x - pivot.x);
 		const float top = std::floor(position.y - pivot.y);
 
-		return Bounds{ left, left + static_cast<float>(width), top, top + static_cast<float>(height) };
+		return Bounds{ left, left + image.width, top, top + image.height };
 	}
 
 	bool Actor::IsSameGrid(const std::shared_ptr<Actor>& other) const
