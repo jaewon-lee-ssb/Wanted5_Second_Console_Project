@@ -70,7 +70,7 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
     <PreBuildEvent>
-      <Command>xcopy ..\Assets\* $(OutDir)..\Assets\ /e /y /i</Command>
+      <Command>xcopy ..\Contents\* $(OutDir)..\Assets\ /e /y /i</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy ..\Library\CraftEngine\$(Configuration)\CraftEngine.dll $(OutDir)\ /e /y /i</Command>
@@ -97,14 +97,20 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
     <PreBuildEvent>
-      <Command>xcopy ..\Assets\* $(OutDir)..\Assets\ /e /y /i</Command>
+      <Command>xcopy ..\Contents\* $(OutDir)..\Assets\ /e /y /i</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy ..\Library\CraftEngine\$(Configuration)\CraftEngine.dll $(OutDir)\ /e /y /i</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actor\Player\Player.cpp" />
+    <ClCompile Include="Level\GameLevel.cpp" />
     <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Actor\Player\Player.h" />
+    <ClInclude Include="Level\GameLevel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -39,7 +39,8 @@ namespace Craft
 		void ChangeImage(const std::vector<std::string>& newImage)
 		{
 			// 새로운 문자열 복사.
-			width = static_cast<int>(newImage.size());
+			width = newImage.empty() ? 0 : static_cast<int>(newImage[0].length());
+			height = static_cast<int>(newImage.size());
 			image = newImage;
 		}
 
