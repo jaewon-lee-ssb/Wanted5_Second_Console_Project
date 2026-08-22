@@ -40,6 +40,7 @@ namespace Craft
 		{
 			// 새로운 이미지로 교체
 			image = newImage;
+			pivot = Vector2F(image.width / 2.0f, image.height / 2.0f);
 		}
 
 		// 액터를 레벨에서 제거할 때 사용할 함수.

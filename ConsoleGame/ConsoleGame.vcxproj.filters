@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Actor\Player\Harpoon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -26,6 +29,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actor\Player\Harpoon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Level\GameLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>

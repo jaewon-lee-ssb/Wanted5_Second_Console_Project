@@ -6,8 +6,7 @@ namespace Craft
 {
 	Camera::Camera()
 	{
-		offset = Vector2F(static_cast<float>(Engine::Get().GetViewportWidth() / 2.f), static_cast<float>(Engine::Get().GetViewportHeight() - 5.f));
-		position.x -= 5;
+		offset = Vector2F((Engine::Get().GetWidth() / 2.f), (Engine::Get().GetHeight() / 2.f));
 	}
 
 	void Camera::SetTarget(const std::shared_ptr<Actor>& target)
@@ -33,8 +32,7 @@ namespace Craft
 		// 타겟을 따라다니도록 타겟의 위치를 업데이트
 		if (auto player = target.lock())
 		{
-			position.y = player->GetPosition().y - offset.y;
-			position.y = std::floor(position.y);
+			position = player->GetPosition() - offset;
 		}
 	}
 }

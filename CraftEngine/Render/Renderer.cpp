@@ -40,7 +40,7 @@ namespace Craft
 				// 빈문자 설정 - 기존의 설정된 값 지우기
 				info.Char.AsciiChar = ' ';
 				// 색상 표기 안함
-				info.Attributes = 0;
+				info.Attributes = static_cast<WORD>(BackgroundColor::Cyan);
 				
 				/*if(x%2==0)
 					info.Attributes = static_cast<WORD>(BackgroundColor::LightGreen);

@@ -11,6 +11,7 @@ public:
 
 private:
 	virtual void OnInitialized() override;
+	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
 

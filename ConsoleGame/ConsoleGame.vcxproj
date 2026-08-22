@@ -104,11 +104,13 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actor\Player\Harpoon.cpp" />
     <ClCompile Include="Actor\Player\Player.cpp" />
     <ClCompile Include="Level\GameLevel.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actor\Player\Harpoon.h" />
     <ClInclude Include="Actor\Player\Player.h" />
     <ClInclude Include="Level\GameLevel.h" />
   </ItemGroup>
