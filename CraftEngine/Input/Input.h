@@ -1,6 +1,9 @@
 ﻿#pragma once
 
 #include <Core/Core.h>
+#include <Math/Vector2.h>
+
+#include <Windows.h>
 
 namespace Craft
 {
@@ -21,7 +24,7 @@ namespace Craft
 
 	public:
 		Input();
-		~Input() = default;
+		~Input();
 
 		// 키 눌림/해제 여부 확인 함수.
 		// 이전 프레임에는 키가 안눌렀다가 현재 프레임에 눌렀을 때 1번만 호출.
@@ -32,6 +35,9 @@ namespace Craft
 
 		// 현재 프레임에 입력이 눌리면 계속 호출.
 		bool GetKey(int keyCode) const;
+
+		// 현재 마우스 포인터의 콘솔 셀 좌표를 반환.
+		const Vector2F& GetMousePosition() const { return mousePosition; }
 
 		// 싱글톤 접근 함수.
 		static Input& Get();
@@ -52,6 +58,18 @@ namespace Craft
 
 		// 싱글톤 구현을 위한 전역 변수
 		static Input* instance;
+
+		// 콘솔 입력 이벤트를 읽기 위한 핸들.
+		HANDLE inputHandle = INVALID_HANDLE_VALUE;
+
+		// 프로그램 시작 시 설정되어 있던 콘솔 입력 모드.
+		DWORD originalConsoleMode = 0;
+
+		// 종료할 때 기존 콘솔 입력 모드를 복구할지 여부.
+		bool shouldRestoreConsoleMode = false;
+
+		// 현재 마우스 포인터의 콘솔 셀 좌표.
+		Vector2F mousePosition = Vector2F::Zero;
 	};
 }
 
