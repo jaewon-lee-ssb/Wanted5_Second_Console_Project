@@ -13,6 +13,8 @@ namespace Craft
 
 		// 레벨에 배치된 액터 수.
 		
+		for(const std::shared_ptr<Actor>& left : actorList)
+
 		std::shared_ptr<Actor> player = collisionContext.player.lock();
 
 		if (!player)
@@ -107,6 +109,15 @@ namespace Craft
 			pair.other->OnCollision(pair.actor);
 		}
 
+	}
+
+	bool CollisionSystem::CanCollide(const std::shared_ptr<Actor>& left, const std::shared_ptr<Actor>& right)
+	{
+		bool leftAcceptsRight = (left->GetCollisionMask() & right->GetCollisionLayer()) != 0;
+
+		bool rightAcceptsRight = (right->GetCollisionMask() & left->GetCollisionLayer()) != 0;
+
+		return leftAcceptsRight && rightAcceptsRight;
 	}
 
 	bool CollisionSystem::TestSwept(const std::shared_ptr<Actor>& left, const std::shared_ptr<Actor>& right)

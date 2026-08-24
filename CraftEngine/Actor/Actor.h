@@ -7,6 +7,7 @@
 #include <Physics/Bounds.h>
 #include <Utility/ActorTags.h>
 #include <Resource/PixelImage.h>
+#include <Physics/CollisionLayer.h>
 
 #include <memory>
 #include <string>
@@ -75,6 +76,13 @@ namespace Craft
 		inline Bounds GetBounds() const;
 		inline Utility::ActorTags GetActorTag() const { return actorTag; }
 
+		// 충돌 레이어 마스크 관련 게터/세터
+		inline CollisionLayer GetCollisionLayer() const { return collisionLayer; }
+		inline CollisionLayer GetCollisionMask() const { return collisionMask; }
+
+		inline void SetCollisionLayer(CollisionLayer layer) { collisionLayer = layer; }
+		inline void SetCollisionMask(CollisionLayer mask) { collisionMask = mask; }
+
 	protected:
 		bool IsSameGrid(const std::shared_ptr<Actor>& other) const;
 
@@ -111,5 +119,9 @@ namespace Craft
 
 		// 액터의 태그
 		Utility::ActorTags actorTag;
+
+	private:
+		CollisionLayer collisionLayer = Collision::None;
+		CollisionLayer collisionMask = Collision::None;
 	};
 }

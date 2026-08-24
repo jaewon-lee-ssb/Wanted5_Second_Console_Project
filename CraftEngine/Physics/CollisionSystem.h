@@ -26,6 +26,9 @@ namespace Craft
 		// 액터를 순회하면서 충돌을 확인하는 함수.
 		void ProcessCollision(Utility::CollisionContext& collisionContext);
 
+		// 충돌 가능여부 검사
+		bool CanCollide(const std::shared_ptr<Actor>& left, const std::shared_ptr<Actor>& right);
+
 	private:
 		// 두 액터가 서로 충돌했는지 확인하는 함수.
 		bool TestSwept(const std::shared_ptr<Actor>& left, const std::shared_ptr<Actor>& right);
