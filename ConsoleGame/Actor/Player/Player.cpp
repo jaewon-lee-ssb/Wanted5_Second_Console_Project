@@ -13,6 +13,7 @@
 #include <Windows.h>
 #include <iomanip>
 #include <sstream>
+#include <memory>
 
 using namespace Craft;
 
@@ -42,6 +43,15 @@ void Player::Tick(float deltaTime)
 	{
 		QuitGame();
 	}
+
+
+	/*Vector2F mouseScreenPosition = Input::Get().GetMousePressedPosition();
+
+	Vector2F mouseWorldPosition = GetOwner()->GetCamera()->ScreenToWorld(mouseScreenPosition);
+	Vector2F playerScreenPosition = GetOwner()->GetCamera()->WorldToScreen(position);
+
+	const bool attackDirection = mouseScreenPosition.x < playerScreenPosition.x;*/
+
 
 	Vector2F mousePosition = Input::Get().GetMousePosition();
 

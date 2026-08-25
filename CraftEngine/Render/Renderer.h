@@ -29,7 +29,7 @@ namespace Craft
 			// 화면에 그릴 색상 이미지 값.
 			//std::string image;
 			//std::vector<std::string> image;
-			PixelImage image;
+			const PixelImage* image = nullptr;
 
 			// 위치.
 			Vector2F position = Vector2F::Zero;

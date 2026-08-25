@@ -101,7 +101,7 @@ namespace Craft
 	{
 		// 그럼 명령 객체 생성.
 		RenderCommand command;
-		command.image = image;
+		command.image = &image;
 		command.position = position;
 		command.pivot = pivot;
 		command.sortingOrder = sortingOrder;
@@ -115,7 +115,7 @@ namespace Craft
 	{
 		// 그럼 명령 객체 생성.
 		RenderCommand command;
-		command.image = image;
+		command.image = &image;
 		command.position = position;
 		command.pivot = pivot;
 		command.sortingOrder = sortingOrder;
@@ -159,10 +159,12 @@ namespace Craft
 		for (const RenderCommand& command : renderQueue)
 		{
 			// 그릴 문자열이 없으면 건너뛰기.
-			if (command.image.pixels.empty())
+			if (command.image == nullptr || command.image->pixels.empty())
 			{
 				continue;
 			}
+
+			const PixelImage& image = *command.image;
 
 			//const Vector2I& drawSize = command.renderSpace == RenderSpace::World ? viewportSize : screenSize;
 			const Vector2I& drawSize = screenSize;
@@ -170,11 +172,22 @@ namespace Craft
 			const int startX = static_cast<int>(command.position.x - command.pivot.x);
 			const int startY = static_cast<int>(command.position.y - command.pivot.y);
 
-			for (int localY = 0; localY < command.image.height; ++localY)
+			const int localStartX = (std::max)(0, -startX);
+			const int localStartY = (std::max)(0, -startY);
+
+			const int localEndX = (std::min)(image.width, drawSize.x - startX);
+			const int localEndY = (std::min)(image.height, drawSize.y - startY);
+
+			if (localStartX >= localEndX || localStartY >= localEndY)
 			{
-				for (int localX = 0; localX < command.image.width; ++localX)
+				continue;
+			}
+
+			for (int localY = localStartY; localY < localEndY; ++localY)
+			{
+				for (int localX = localStartX; localX < localEndX; ++localX)
 				{
-					const Pixel& pixel = command.image.At(localX, localY);
+					const Pixel& pixel = image.At(localX, localY);
 
 					// 픽셀이 투명하면 스킵
 					if (pixel.transparent)
@@ -185,10 +198,6 @@ namespace Craft
 					const int screenX = startX + localX;
 					const int screenY = startY + localY;
 
-					if (screenX < 0 || screenX >= drawSize.x || screenY < 0 || screenY >= drawSize.y)
-					{
-						continue;
-					}
 					
 
 					const int index = (screenY * screenSize.x) + screenX;

@@ -18,8 +18,12 @@ namespace Craft
 		{
 			// 현재 프레임에 눌렀는지 여부 플래그.
 			bool isKeyDown = false;
-			// 이전 프레임에 키가 눌렀는지 여부 플래그.
-			bool wasKeyDown = false;
+			
+			// 이번 프레임 사이에 눌림 이벤트가 발생했는지 여부 플래그
+			bool pressedThisFrame = false;
+
+			// 이번 프레임 사이에 해제 이벤트가 발생했는지 여부 플래그
+			bool releasedThisFrame = false;
 		};
 
 	public:
@@ -39,6 +43,8 @@ namespace Craft
 		// 현재 마우스 포인터의 콘솔 셀 좌표를 반환.
 		const Vector2F& GetMousePosition() const { return mousePosition; }
 
+		const Vector2F& GetMousePressedPosition() const { return mousePressedPosition; }
+
 		// 싱글톤 접근 함수.
 		static Input& Get();
 
@@ -48,6 +54,11 @@ namespace Craft
 
 		// 현재 프레임의 입력 상태를 이전 프레임 상태로 저장하는 함수.
 		void SavePreviousStates();
+
+		// 
+		void UpdateKeyState(int keyCode, bool newKeyDown);
+
+		void PollMouseButton(int keyCode);
 
 	private:
 		// 가상 키의 수.
@@ -70,6 +81,8 @@ namespace Craft
 
 		// 현재 마우스 포인터의 콘솔 셀 좌표.
 		Vector2F mousePosition = Vector2F::Zero;
+
+		Vector2F mousePressedPosition = Vector2F::Zero;
 	};
 }
 

@@ -55,12 +55,12 @@ namespace Craft
 
 	bool Input::GetKeyDown(int keyCode) const
 	{
-		return keyStates[keyCode].isKeyDown && !keyStates[keyCode].wasKeyDown;
+		return keyStates[keyCode].pressedThisFrame;
 	}
 
 	bool Input::GetKeyUp(int keyCode) const
 	{
-		return !keyStates[keyCode].isKeyDown && keyStates[keyCode].wasKeyDown;
+		return keyStates[keyCode].releasedThisFrame;
 	}
 
 	bool Input::GetKey(int keyCode) const
@@ -89,8 +89,7 @@ namespace Craft
 		DWORD pendingEventCount = 0;
 
 		// 한 프레임 동안 입력 버퍼에 쌓인 이벤트를 모두 처리.
-		while (GetNumberOfConsoleInputEvents(inputHandle, &pendingEventCount)
-			&& pendingEventCount > 0)
+		while (GetNumberOfConsoleInputEvents(inputHandle, &pendingEventCount) && pendingEventCount > 0)
 		{
 			// 실제로 읽어온 이벤트 수를 저장할 변수.
 			DWORD readEventCount = 0;
@@ -125,9 +124,8 @@ namespace Craft
 					if (keyCode < keyCount)
 					{
 						// 키가 눌렸는지 또는 해제됐는지 현재 상태에 저장.
-						KeyState& state = keyStates[keyCode];
 						const bool isKeyDown = keyEvent.bKeyDown != FALSE;
-						state.isKeyDown = isKeyDown;
+						UpdateKeyState(keyCode, isKeyDown);
 					}
 					break;
 				}
@@ -159,10 +157,8 @@ namespace Craft
 					for (const MouseButton& button : mouseButtons)
 					{
 						// 버튼이 눌렸는지 비트 연산으로 확인한 후 키 상태에 저장.
-						KeyState& state = keyStates[button.keyCode];
-						const bool isKeyDown =
-							(mouseEvent.dwButtonState & button.buttonMask) != 0;
-						state.isKeyDown = isKeyDown;
+						const bool isKeyDown = (mouseEvent.dwButtonState & button.buttonMask) != 0;
+						UpdateKeyState(button.keyCode, isKeyDown);
 					}
 					break;
 				}
@@ -176,12 +172,19 @@ namespace Craft
 						for (KeyState& state : keyStates)
 						{
 							state.isKeyDown = false;
+							state.pressedThisFrame = false;
+							state.releasedThisFrame = false;
 						}
 					}
 					break;
 				}
 			}
 		}
+
+		// 콘솔 이벤트가 놓친 마우스 버튼 입력 보완
+		//PollMouseButton(VK_LBUTTON);
+		//PollMouseButton(VK_RBUTTON);
+		//PollMouseButton(VK_MBUTTON);
 	}
 
 	void Input::SavePreviousStates()
@@ -190,7 +193,60 @@ namespace Craft
 		for (KeyState& state : keyStates)
 		{
 			// 현재 프레임 입력 값을 이전 프레임 값으로 저장.
-			state.wasKeyDown = state.isKeyDown;
+			state.pressedThisFrame = false;
+			state.releasedThisFrame = false;
 		}
+	}
+	void Input::UpdateKeyState(int keyCode, bool newKeyDown)
+	{
+		KeyState& state = keyStates[keyCode];
+
+		// 실제 상태가 변하지 않았다면 자동 반복 입력들은 무시
+		if (state.isKeyDown == newKeyDown)
+		{
+			return;
+		}
+
+		state.isKeyDown = newKeyDown;
+
+		if (newKeyDown)
+		{
+			state.pressedThisFrame = true;
+		}
+		else
+		{
+			state.releasedThisFrame = true;
+		}
+
+
+	}
+
+	void Input::PollMouseButton(int keyCode)
+	{
+		KeyState& state = keyStates[keyCode];
+
+		const SHORT asyncState = GetAsyncKeyState(keyCode);
+
+		// 지금 실제로 누르고 있는 상태
+		const bool isActuallyDown = (asyncState & 0x8000) != 0;
+
+		// 마지막 확인 이후 한 번이라도 눌린 상태
+		const bool wasPressed = (asyncState & 0x0001) != 0;
+
+		if (wasPressed)
+		{
+			state.pressedThisFrame = true;
+			if (keyCode == VK_LBUTTON)
+			{
+				mousePressedPosition = mousePosition;
+			}
+		}
+
+		if (state.isKeyDown && !isActuallyDown)
+		{
+			state.releasedThisFrame = true;
+		}
+
+		state.isKeyDown = isActuallyDown;
 	}
 }
