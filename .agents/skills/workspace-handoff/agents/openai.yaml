@@ -1,0 +1,4 @@
+interface:
+  display_name: "작업 공간 인계"
+  short_description: "새 작업 공간에서 바로 이어가도록 현재 작업을 정리합니다"
+  default_prompt: "$workspace-handoff를 사용해 현재 작업 상태와 다음 작업을 새 대화용 인계문으로 정리해줘"
