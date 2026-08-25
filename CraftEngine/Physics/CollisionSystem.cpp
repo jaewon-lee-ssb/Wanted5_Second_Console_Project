@@ -6,14 +6,25 @@
 
 namespace Craft
 {
-	void CollisionSystem::ProcessCollision(Utility::CollisionContext& collisionContext)
+	void CollisionSystem::ProcessCollision(Utility::CollisionContext& collisionContext, std::vector<std::shared_ptr<Actor>> actorList)
 	{
 		// 충돌한 액터에 이벤트를 전달하기 위한 배열.
 		std::vector<CollisionPair> collidedActorList;
 
 		// 레벨에 배치된 액터 수.
 		
-		for(const std::shared_ptr<Actor>& left : actorList)
+		for (const std::shared_ptr<Actor>& left : actorList)
+		{
+			for (const std::shared_ptr<Actor>& right : actorList)
+			{
+				if (left == right)
+				{
+					continue;
+				}
+
+				CanCollide(left, right);
+			}
+		}
 
 		std::shared_ptr<Actor> player = collisionContext.player.lock();
 
@@ -113,6 +124,11 @@ namespace Craft
 
 	bool CollisionSystem::CanCollide(const std::shared_ptr<Actor>& left, const std::shared_ptr<Actor>& right)
 	{
+		if (!left || !right)
+		{
+			return false;
+		}
+
 		bool leftAcceptsRight = (left->GetCollisionMask() & right->GetCollisionLayer()) != 0;
 
 		bool rightAcceptsRight = (right->GetCollisionMask() & left->GetCollisionLayer()) != 0;

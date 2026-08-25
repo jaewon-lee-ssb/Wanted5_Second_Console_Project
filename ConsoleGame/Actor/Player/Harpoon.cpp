@@ -1,4 +1,6 @@
-#include <Actor/Player/Harpoon.h>
+﻿#include <Actor/Player/Harpoon.h>
+
+#include <Collision/GameCollisionLayers.h>
 
 #include <algorithm>
 #include <cmath>
@@ -107,6 +109,8 @@ namespace
 Harpoon::Harpoon(const Craft::Vector2F& start, const Craft::Vector2F& mousePosition)
 	: Actor(CreateHarpoonImage(start, mousePosition, attackRadius), GetHarpoonCenter(start, mousePosition, attackRadius), Utility::ActorTags::PlayerAttackBox)
 {
+	SetCollisionLayer(GameCollision::PlayerAttack);
+
 }
 
 void Harpoon::Tick(float deltaTime)

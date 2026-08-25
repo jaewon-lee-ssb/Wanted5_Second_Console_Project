@@ -24,7 +24,7 @@ namespace Craft
 		~CollisionSystem() = default;
 
 		// 액터를 순회하면서 충돌을 확인하는 함수.
-		void ProcessCollision(Utility::CollisionContext& collisionContext);
+		void ProcessCollision(Utility::CollisionContext& collisionContext, std::vector<std::shared_ptr<Actor>> actorList);
 
 		// 충돌 가능여부 검사
 		bool CanCollide(const std::shared_ptr<Actor>& left, const std::shared_ptr<Actor>& right);

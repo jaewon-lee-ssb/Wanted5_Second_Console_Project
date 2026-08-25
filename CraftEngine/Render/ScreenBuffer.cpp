@@ -1,5 +1,7 @@
 ﻿#include <Render/ScreenBuffer.h>
 
+#include <Math/Color.h>
+
 #include <cassert>
 
 namespace Craft
@@ -54,6 +56,19 @@ namespace Craft
 
 	void ScreenBuffer::Clear() const
 	{
+		CONSOLE_SCREEN_BUFFER_INFO bufferInfo{};
+
+		if (!GetConsoleScreenBufferInfo(
+			screenBuffer,
+			&bufferInfo))
+		{
+			return;
+		}
+
+		const DWORD cellCount =
+			static_cast<DWORD>(bufferInfo.dwSize.X) *
+			static_cast<DWORD>(bufferInfo.dwSize.Y);
+
 		// 콘솔을 지우는 함수.
 		// 공백 문자를 화면 크기 전체에 한번에 설정.
 		
@@ -63,14 +78,22 @@ namespace Craft
 		coord.Y = 0;
 
 		// 화면에 설정된 글자 수 (출력용)
-		DWORD writtenCOunt = 0;
+		DWORD writtenCount = 0;
 
 		BOOL result = FillConsoleOutputCharacterA(
 			screenBuffer,
 			' ',
-			screenSize.x * screenSize.y,
+			cellCount,
 			coord,
-			&writtenCOunt
+			&writtenCount
+		);
+
+		FillConsoleOutputAttribute(
+			screenBuffer,
+			static_cast<WORD>(BackgroundColor::Cyan),
+			cellCount,
+			coord,
+			&writtenCount
 		);
 
 		assert(result == TRUE);

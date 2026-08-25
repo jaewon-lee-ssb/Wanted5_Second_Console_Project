@@ -8,6 +8,8 @@
 #include <Camera/Camera.h>
 #include <Resource/TextImageLoader.h>
 
+#include <Collision/GameCollisionLayers.h>
+
 #include <Windows.h>
 #include <iomanip>
 #include <sstream>
@@ -25,6 +27,8 @@ Player::Player(const Vector2F& position)
 	playerAttackPoint[0] = Vector2F(GetPosition().x - GetPivot().x, GetPosition().y);
 	// 1 - 오른쪽
 	playerAttackPoint[1] = Vector2F(GetPosition().x + GetPivot().x, GetPosition().y);
+
+	SetCollisionLayer(GameCollision::Player);
 }
 
 void Player::Tick(float deltaTime)

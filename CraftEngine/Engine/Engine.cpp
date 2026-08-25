@@ -252,7 +252,7 @@ namespace Craft
 
 
 		// 레벨의 액터 목록을 충돌 시스템에 전달해 처리 진행.
-		collisionSystem->ProcessCollision(collisionContext);
+		collisionSystem->ProcessCollision(collisionContext, mainLevel->actorList);
 	}
 
 	void Engine::SavePreviousInputStates()

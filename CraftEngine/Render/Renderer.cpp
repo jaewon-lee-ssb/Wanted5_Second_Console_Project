@@ -149,7 +149,7 @@ namespace Craft
 		frame->Clear(screenSize);
 
 		// 콘솔 버퍼 초기화
-		//GetCurrentBuffer()->Clear();
+		GetCurrentBuffer()->Clear();
 
 	}
 
