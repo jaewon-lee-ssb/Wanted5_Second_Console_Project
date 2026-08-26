@@ -2,13 +2,13 @@
 framerate = 120
 
 # screen width
-width = 360
+width = 564
 
 # screen height
-height = 126
+height = 178
 
 # game viewport width
-viewportwidth = 456
+viewportwidth = 700
 
 # game viewport height
 viewportheight = 164

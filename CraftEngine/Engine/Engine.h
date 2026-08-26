@@ -4,40 +4,6 @@
 
 #include <memory>
 
-//#include <vector>
-//#include <unordered_map>
-//
-//enum class VarType
-//{
-//	None,
-//	Integer,
-//	Float,
-//	String,
-//	Boolean
-//};
-//
-//// 
-//std::unordered_map<std::string, Variable> variableList;
-//
-//class Variable
-//{
-//public:
-//	const char* GetName() const { return name; }
-//	
-//
-//private:
-//	// 변수 이름(framerate).
-//	char* name = nullptr;
-//
-//
-//
-//	// 변수 타입 (열거형)
-//	VarType type = VarType::None;
-//
-//	// 값
-//	void* value = nullptr;
-//};
-
 namespace Craft
 {
 	// 전방 선언 (컴파일 시간 단축).

@@ -17,11 +17,13 @@ void GameLevel::OnInitialized()
 		Craft::Engine::Get().Quit();
 	}
 
-	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 10.f));
+	auto player = SpawnActor<Player>(Craft::Vector2F(300.f, 10.f));
 
 	if (GetCamera())
 	{
 		GetCamera()->SetTarget(player);
+		
+		GetCamera()->SetMapSize(Craft::Vector2F(map->GetWidth(), map->GetHeight()));
 	}
 
 	

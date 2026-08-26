@@ -45,23 +45,9 @@ void Player::Tick(float deltaTime)
 	}
 
 
-	/*Vector2F mouseScreenPosition = Input::Get().GetMousePressedPosition();
-
-	Vector2F mouseWorldPosition = GetOwner()->GetCamera()->ScreenToWorld(mouseScreenPosition);
-	Vector2F playerScreenPosition = GetOwner()->GetCamera()->WorldToScreen(position);
-
-	const bool attackDirection = mouseScreenPosition.x < playerScreenPosition.x;*/
-
-
 	Vector2F mousePosition = Input::Get().GetMousePosition();
 
 	mousePosition = GetOwner()->GetCamera()->ScreenToWorld(mousePosition);
-
-	/*std::ostringstream title;
-	title << std::fixed << std::setprecision(2)
-		<< "X: " << mousePosition.x << " | Y: " << mousePosition.y;
-
-	SetConsoleTitleA(title.str().c_str());*/
 
 
 	playerMoveDir = Vector2F::Zero;

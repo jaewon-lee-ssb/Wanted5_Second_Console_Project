@@ -125,13 +125,6 @@ namespace Craft
 		ChangeImage(mapImage);
 		pivot = Vector2F::Zero;
 
-		
-
-	
-
-		
-
-
 		file.close();
 
 		return true;

@@ -2,6 +2,8 @@
 #include <Actor/Actor.h>
 #include <Engine/Engine.h>
 
+#include <algorithm>
+
 namespace Craft
 {
 	Camera::Camera()
@@ -32,7 +34,10 @@ namespace Craft
 		// 타겟을 따라다니도록 타겟의 위치를 업데이트
 		if (auto player = target.lock())
 		{
-			position = player->GetPosition() - offset;
+			Vector2F newPosition = player->GetPosition() - offset;
+		
+			position.x = (std::clamp)(newPosition.x, 0.f, mapSize.x - Engine::Get().GetWidth());
+			position.y = (std::clamp)(newPosition.y, 0.f, mapSize.y - Engine::Get().GetHeight());
 		}
 	}
 }
