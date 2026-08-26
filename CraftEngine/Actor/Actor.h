@@ -74,6 +74,8 @@ namespace Craft
 		inline int GetHeight() const { return image.height; }
 
 		inline Bounds GetBounds() const;
+		inline Bounds GetBoundsAt(const Vector2F& targetPosition) const;
+
 		inline Utility::ActorTags GetActorTag() const { return actorTag; }
 
 		// 충돌 레이어 마스크 관련 게터/세터
@@ -82,9 +84,6 @@ namespace Craft
 
 		inline void SetCollisionLayer(CollisionLayer layer) { collisionLayer = layer; }
 		inline void SetCollisionMask(CollisionLayer mask) { collisionMask = mask; }
-
-	protected:
-		bool IsSameGrid(const std::shared_ptr<Actor>& other) const;
 
 
 	protected:

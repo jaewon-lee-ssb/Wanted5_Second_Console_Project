@@ -3,6 +3,7 @@
 #include <Core/Core.h>
 
 #include <Actor/Actor.h>
+#include <Physics/Bounds.h>
 
 #include <cstdint>
 #include <string>
@@ -26,11 +27,20 @@ namespace Craft
 
 		bool Load(const std::string& filename);
 
+		// 좌표의 타일타입 게터함수
 		TileType GetTile(int x, int y) const;
+		// 좌표의 타일이 벽인지 체크 함수
 		bool IsSolid(int x, int y) const;
 
+		// 위치 변환 좌표
 		Vector2F TileToWorld(int x, int y) const;
 		void WorldToTile(const Vector2F& position, int& x, int& y) const;
+
+		// 타일의 크기 게터
+		const Vector2I GetTileSize() const { return Vector2I(tileWidth, tileHeight); }
+
+		// 벽과 충돌 체크 함수
+		bool OverlapsSolid(const Bounds& worldBounds) const;
 
 		virtual void Draw() override;
 
@@ -48,9 +58,11 @@ namespace Craft
 		void DrawSubmergedRock();
 
 	private:
+		// 맵의 가로 세로길이
 		int mapWidth = 0;
 		int mapHeight = 0;
 
+		// 타일 하나의 가로 세로 길이
 		int tileWidth = 8;
 		int tileHeight = 4;
 

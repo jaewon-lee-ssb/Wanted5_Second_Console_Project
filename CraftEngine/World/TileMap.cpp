@@ -137,6 +137,36 @@ namespace Craft
 		outY = static_cast<int>(std::floor(localPosition.y / tileHeight));
 	}
 
+	bool TileMap::OverlapsSolid(const Bounds& worldBounds) const
+	{
+		// 월드 좌표에서 타일맵 위치를 빼서
+		// 타일맵 내부 로컬 좌표로 변환
+		const float localLeft = worldBounds.left - GetPosition().x;
+		const float localRight = worldBounds.right - GetPosition().x;
+		const float localTop = worldBounds.top - GetPosition().y;
+		const float localBottom = worldBounds.bottom - GetPosition().y;
+
+		// Bounds가 걸치는 타일 좌표 범위 계산
+		const int leftTile = static_cast<int>(std::floor(localLeft / tileWidth));
+		const int rightTile = static_cast<int>(std::ceil(localRight / tileWidth)) - 1;
+		const int topTile = static_cast<int>(std::floor(localTop / tileHeight));
+		const int bottomTile = static_cast<int>(std::ceil(localBottom / tileHeight)) - 1;
+
+		// 해당 범위에 벽이 하나라도 있으면 충돌
+		for (int tileY = topTile; tileY <= bottomTile; ++tileY)
+		{
+			for (int tileX = leftTile; tileX <= rightTile; ++tileX)
+			{
+				if (IsSolid(tileX, tileY))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	void TileMap::Draw()
 	{
 		super::Draw();

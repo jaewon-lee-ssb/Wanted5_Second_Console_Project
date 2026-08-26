@@ -84,15 +84,13 @@ namespace Craft
 
 	inline Bounds Actor::GetBounds() const
 	{
-		const float left = std::floor(position.x - pivot.x);
-		const float top = std::floor(position.y - pivot.y);
-
-		return Bounds{ left, left + image.width, top, top + image.height };
+		return GetBoundsAt(position);
 	}
 
-	bool Actor::IsSameGrid(const std::shared_ptr<Actor>& other) const
+	inline Bounds Actor::GetBoundsAt(const Vector2F& targetPosition) const
 	{
-		return std::floor(GetPosition().x) == std::floor(other->GetPosition().x)
-			&& std::floor(GetPosition().y) == std::floor(other->GetPosition().y);
+		const float left = targetPosition.x - pivot.x;
+		const float top = targetPosition.y - pivot.y;
+		return Bounds(left, left + image.width, top, top + image.height);
 	}
 }

@@ -10,6 +10,8 @@
 
 #include <Collision/GameCollisionLayers.h>
 
+#include <World/TileMap.h>
+
 #include <Windows.h>
 #include <iomanip>
 #include <sstream>
@@ -30,6 +32,7 @@ Player::Player(const Vector2F& position)
 	playerAttackPoint[1] = Vector2F(GetPosition().x + GetPivot().x, GetPosition().y);
 
 	SetCollisionLayer(GameCollision::Player);
+
 }
 
 void Player::Tick(float deltaTime)
@@ -100,9 +103,36 @@ void Player::Move(float deltaTime)
 		return;
 	}
 
+	auto map = tileMap.lock();
+	if (!map)
+	{
+		return;
+	}
+
+	Vector2F movement = playerMoveDir.Normalize() * playerMoveSpeed * deltaTime;
+
 	Vector2F newPosition = GetPosition();
 
-	newPosition = newPosition + playerMoveDir.Normalize() * playerMoveSpeed * deltaTime;
+	newPosition.x += movement.x;
+
+	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	{
+		SetPosition(newPosition);
+	}
+	else
+	{
+		newPosition.x = position.x;
+	}
+
+	newPosition.y += movement.y;
+	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	{
+		SetPosition(newPosition);
+	}
+	else
+	{
+		newPosition.y = position.y;
+	}
 
 	SetPosition(newPosition);
 
