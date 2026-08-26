@@ -5,6 +5,11 @@
 
 #include <Windows.h>
 
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 namespace Craft
 {
 	// 입력 관련 기능을 제공
@@ -52,6 +57,9 @@ namespace Craft
 		// 현재 프레임에 키 입력이 눌렸는지 여부 확인 함수.
 		void ProcessInput();
 
+		// 콘솔 입력을 계속 읽어서 대기열에 저장하는 스레드 함수.
+		void InputThreadLoop();
+
 		// 현재 프레임의 입력 상태를 이전 프레임 상태로 저장하는 함수.
 		void SavePreviousStates();
 
@@ -78,6 +86,14 @@ namespace Craft
 
 		// 종료할 때 기존 콘솔 입력 모드를 복구할지 여부.
 		bool shouldRestoreConsoleMode = false;
+
+		// 렌더링과 별개로 콘솔 입력을 계속 읽는 스레드.
+		std::thread inputThread;
+		std::atomic<bool> shouldStopInputThread = false;
+
+		// 입력 스레드가 읽은 원시 콘솔 이벤트 대기열.
+		std::mutex pendingInputMutex;
+		std::vector<INPUT_RECORD> pendingInputRecords;
 
 		// 현재 마우스 포인터의 콘솔 셀 좌표.
 		Vector2F mousePosition = Vector2F::Zero;

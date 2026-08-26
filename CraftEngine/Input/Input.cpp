@@ -39,10 +39,20 @@ namespace Craft
 			// 변경한 콘솔 입력 모드를 적용하고 성공 여부 저장.
 			shouldRestoreConsoleMode = SetConsoleMode(inputHandle, inputMode) != FALSE;
 		}
+
+		// 렌더링 중에도 콘솔 입력을 놓치지 않도록 입력 전용 스레드 시작.
+		inputThread = std::thread(&Input::InputThreadLoop, this);
 	}
 
 	Input::~Input()
 	{
+		// 입력 스레드를 먼저 종료한 뒤 콘솔 입력 모드를 복구.
+		shouldStopInputThread.store(true);
+		if (inputThread.joinable())
+		{
+			inputThread.join();
+		}
+
 		// 입력 모드 변경에 성공했으면 기존 콘솔 입력 모드로 복구.
 		if (shouldRestoreConsoleMode)
 		{
@@ -76,115 +86,111 @@ namespace Craft
 
 	void Input::ProcessInput()
 	{
-		// 콘솔 입력 핸들이 유효하지 않으면 입력 처리 종료.
-		if (inputHandle == INVALID_HANDLE_VALUE || inputHandle == nullptr)
+		// 입력 스레드가 모아둔 이벤트를 잠금 시간을 짧게 유지하며 가져옴.
+		std::vector<INPUT_RECORD> records;
 		{
-			return;
+			std::lock_guard<std::mutex> lock(pendingInputMutex);
+			records.swap(pendingInputRecords);
 		}
 
-		// 한 번에 읽어올 콘솔 입력 이벤트 배열.
-		INPUT_RECORD records[128] = { };
-
-		// 콘솔 입력 버퍼에 대기 중인 이벤트 수.
-		DWORD pendingEventCount = 0;
-
-		// 한 프레임 동안 입력 버퍼에 쌓인 이벤트를 모두 처리.
-		while (GetNumberOfConsoleInputEvents(inputHandle, &pendingEventCount) && pendingEventCount > 0)
+		// 읽은 입력 이벤트를 순서대로 처리.
+		for (const INPUT_RECORD& record : records)
 		{
-			// 실제로 읽어온 이벤트 수를 저장할 변수.
-			DWORD readEventCount = 0;
+			// 입력 이벤트 종류에 따라 처리.
+			switch (record.EventType)
+			{
+			case KEY_EVENT:
+			{
+				// 키보드 이벤트 정보 가져오기.
+				const KEY_EVENT_RECORD& keyEvent = record.Event.KeyEvent;
 
-			// 배열 크기를 넘지 않도록 한 번에 읽을 이벤트 수 결정.
-			const DWORD readCount = pendingEventCount < 128 ? pendingEventCount : 128;
+				// 입력된 키의 가상 키 코드 가져오기.
+				const WORD keyCode = keyEvent.wVirtualKeyCode;
 
-			// 콘솔 입력 버퍼에서 이벤트 읽기.
-			if (!ReadConsoleInput(inputHandle, records, readCount, &readEventCount))
+				// 관리하는 키 배열 범위 안에 있는지 확인.
+				if (keyCode < keyCount)
+				{
+					// 키가 눌렸는지 또는 해제됐는지 현재 상태에 저장.
+					const bool isKeyDown = keyEvent.bKeyDown != FALSE;
+					UpdateKeyState(keyCode, isKeyDown);
+				}
+				break;
+			}
+
+			case MOUSE_EVENT:
+			{
+				// 마우스 이벤트 정보 가져오기.
+				const MOUSE_EVENT_RECORD& mouseEvent = record.Event.MouseEvent;
+
+				// 마우스 포인터의 콘솔 셀 좌표 저장.
+				mousePosition.x = mouseEvent.dwMousePosition.X;
+				mousePosition.y = mouseEvent.dwMousePosition.Y;
+
+				// 마우스 버튼과 가상 키 코드를 연결하기 위한 구조체.
+				const struct MouseButton
+				{
+					int keyCode;
+					DWORD buttonMask;
+				} mouseButtons[] = {
+					{ VK_LBUTTON, FROM_LEFT_1ST_BUTTON_PRESSED },
+					{ VK_RBUTTON, RIGHTMOST_BUTTON_PRESSED },
+					{ VK_MBUTTON, FROM_LEFT_2ND_BUTTON_PRESSED }
+				};
+
+				for (const MouseButton& button : mouseButtons)
+				{
+					const bool isKeyDown =
+						(mouseEvent.dwButtonState & button.buttonMask) != 0;
+					UpdateKeyState(button.keyCode, isKeyDown);
+				}
+				break;
+			}
+
+			case FOCUS_EVENT:
+				// 콘솔 창이 입력 포커스를 잃었는지 확인.
+				if (!record.Event.FocusEvent.bSetFocus)
+				{
+					for (KeyState& state : keyStates)
+					{
+						state.isKeyDown = false;
+						state.pressedThisFrame = false;
+						state.releasedThisFrame = false;
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	void Input::InputThreadLoop()
+	{
+		while (!shouldStopInputThread.load())
+		{
+			// 입력이 생기거나 종료 확인 시간이 될 때까지 짧게 대기.
+			const DWORD waitResult = WaitForSingleObject(inputHandle, 5);
+			if (waitResult == WAIT_TIMEOUT)
+			{
+				continue;
+			}
+			if (waitResult != WAIT_OBJECT_0)
 			{
 				break;
 			}
 
-			// 읽어온 입력 이벤트를 순서대로 처리.
-			for (DWORD ix = 0; ix < readEventCount; ++ix)
+			INPUT_RECORD records[128] = {};
+			DWORD readEventCount = 0;
+			if (!ReadConsoleInput(inputHandle, records, 128, &readEventCount))
 			{
-				// 현재 처리할 입력 이벤트.
-				const INPUT_RECORD& record = records[ix];
-
-				// 입력 이벤트 종류에 따라 처리.
-				switch (record.EventType)
-				{
-				case KEY_EVENT:
-				{
-					// 키보드 이벤트 정보 가져오기.
-					const KEY_EVENT_RECORD& keyEvent = record.Event.KeyEvent;
-
-					// 입력된 키의 가상 키 코드 가져오기.
-					const WORD keyCode = keyEvent.wVirtualKeyCode;
-
-					// 관리하는 키 배열 범위 안에 있는지 확인.
-					if (keyCode < keyCount)
-					{
-						// 키가 눌렸는지 또는 해제됐는지 현재 상태에 저장.
-						const bool isKeyDown = keyEvent.bKeyDown != FALSE;
-						UpdateKeyState(keyCode, isKeyDown);
-					}
-					break;
-				}
-
-				case MOUSE_EVENT:
-				{
-					// 마우스 이벤트 정보 가져오기.
-					const MOUSE_EVENT_RECORD& mouseEvent = record.Event.MouseEvent;
-
-					// 마우스 포인터의 콘솔 셀 좌표 저장.
-					mousePosition.x = mouseEvent.dwMousePosition.X;
-					mousePosition.y = mouseEvent.dwMousePosition.Y;
-
-					// 마우스 버튼과 가상 키 코드를 연결하기 위한 구조체.
-					const struct MouseButton
-					{
-						// 키 상태 배열에서 사용할 가상 키 코드.
-						int keyCode;
-
-						// 마우스 이벤트에서 버튼 상태를 확인할 비트 값.
-						DWORD buttonMask;
-					} mouseButtons[] = {
-						{ VK_LBUTTON, FROM_LEFT_1ST_BUTTON_PRESSED },
-						{ VK_RBUTTON, RIGHTMOST_BUTTON_PRESSED },
-						{ VK_MBUTTON, FROM_LEFT_2ND_BUTTON_PRESSED }
-					};
-
-					// 왼쪽, 오른쪽, 가운데 마우스 버튼 상태 처리.
-					for (const MouseButton& button : mouseButtons)
-					{
-						// 버튼이 눌렸는지 비트 연산으로 확인한 후 키 상태에 저장.
-						const bool isKeyDown = (mouseEvent.dwButtonState & button.buttonMask) != 0;
-						UpdateKeyState(button.keyCode, isKeyDown);
-					}
-					break;
-				}
-
-				case FOCUS_EVENT:
-					// 콘솔 창이 입력 포커스를 잃었는지 확인.
-					if (!record.Event.FocusEvent.bSetFocus)
-					{
-						// 포커스를 잃는 동안 KeyUp 이벤트가 누락되어
-						// 키가 계속 눌린 상태로 남는 것을 방지.
-						for (KeyState& state : keyStates)
-						{
-							state.isKeyDown = false;
-							state.pressedThisFrame = false;
-							state.releasedThisFrame = false;
-						}
-					}
-					break;
-				}
+				break;
 			}
-		}
 
-		// 콘솔 이벤트가 놓친 마우스 버튼 입력 보완
-		//PollMouseButton(VK_LBUTTON);
-		//PollMouseButton(VK_RBUTTON);
-		//PollMouseButton(VK_MBUTTON);
+			std::lock_guard<std::mutex> lock(pendingInputMutex);
+			pendingInputRecords.insert(
+				pendingInputRecords.end(),
+				records,
+				records + readEventCount
+			);
+		}
 	}
 
 	void Input::SavePreviousStates()
@@ -219,34 +225,5 @@ namespace Craft
 		}
 
 
-	}
-
-	void Input::PollMouseButton(int keyCode)
-	{
-		KeyState& state = keyStates[keyCode];
-
-		const SHORT asyncState = GetAsyncKeyState(keyCode);
-
-		// 지금 실제로 누르고 있는 상태
-		const bool isActuallyDown = (asyncState & 0x8000) != 0;
-
-		// 마지막 확인 이후 한 번이라도 눌린 상태
-		const bool wasPressed = (asyncState & 0x0001) != 0;
-
-		if (wasPressed)
-		{
-			state.pressedThisFrame = true;
-			if (keyCode == VK_LBUTTON)
-			{
-				mousePressedPosition = mousePosition;
-			}
-		}
-
-		if (state.isKeyDown && !isActuallyDown)
-		{
-			state.releasedThisFrame = true;
-		}
-
-		state.isKeyDown = isActuallyDown;
 	}
 }
