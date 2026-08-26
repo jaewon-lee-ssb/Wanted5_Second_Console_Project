@@ -6,98 +6,14 @@
 
 namespace Craft
 {
-	void CollisionSystem::ProcessCollision(Utility::CollisionContext& collisionContext, std::vector<std::shared_ptr<Actor>> actorList)
+	void CollisionSystem::ProcessCollision(Utility::CollisionContext& collisionContext, std::vector<std::shared_ptr<Actor>>& actorList)
 	{
 		// 충돌한 액터에 이벤트를 전달하기 위한 배열.
 		std::vector<CollisionPair> collidedActorList;
 
-		// 레벨에 배치된 액터 수.
 		
-		for (const std::shared_ptr<Actor>& left : actorList)
-		{
-			for (const std::shared_ptr<Actor>& right : actorList)
-			{
-				if (left == right)
-				{
-					continue;
-				}
 
-				CanCollide(left, right);
-			}
-		}
-
-		std::shared_ptr<Actor> player = collisionContext.player.lock();
-
-		if (!player)
-		{
-			return;
-		}
-
-		// 플레이어 <-> 아이템
-		for (const auto& weakItem : collisionContext.itemList)
-		{
-			if (auto item = weakItem.lock())
-			{
-				if (TestAABB(player, item))
-				{
-					// 목록에 추가
-					collidedActorList.emplace_back(player, item);
-				}
-			}
-		}
-
-		// 플레이어 <-> 적공격
-		for (const auto& weakDamageBox : collisionContext.enemyAttackList)
-		{
-			if (auto damageBox = weakDamageBox.lock())
-			{
-				if (TestAABB(player, damageBox))
-				{
-					collidedActorList.emplace_back(player, damageBox);
-				}
-			}
-		}
-
-
-		for (const auto& weakPlayerAttack : collisionContext.playerAttackList)
-		{
-			if (auto playerAttack = weakPlayerAttack.lock())
-			{
-				// 적 <-> 플레이어공격
-				for (const auto& weakEnemy : collisionContext.enemyList)
-				{
-					if (auto enemy = weakEnemy.lock())
-					{
-						if (TestAABB(enemy, playerAttack))
-						{
-							collidedActorList.emplace_back(enemy, playerAttack);
-						}
-					}
-				}
-
-				// 플레이어 공격 <-> 폭탄
-				for (const auto& weakBomb : collisionContext.bombList)
-				{
-					if (auto bomb = weakBomb.lock())
-					{
-						if(TestAABB(playerAttack, bomb))
-						{
-							// 목록에 추가
-							collidedActorList.emplace_back(playerAttack, bomb);
-						}
-					}
-				}
-			}
-		}
-		//트리거 <-> 플레이어
-		for (const auto& triggerBox : collisionContext.triggerList)
-		{
-			auto trigger = triggerBox.lock();
-			if (TestAABB(player, trigger))
-			{
-				collidedActorList.emplace_back(player, trigger);
-			}
-		}
+		
 
 
 		// 충돌 발생한 액터 목록 확인. 충돌한 액터가 없으면 함수 반환.

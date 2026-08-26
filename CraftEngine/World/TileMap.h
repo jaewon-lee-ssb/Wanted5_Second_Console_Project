@@ -35,6 +35,19 @@ namespace Craft
 		virtual void Draw() override;
 
 	private:
+		// 벽이나 물 색 변경
+		void BuildVisualImage();
+
+		// 바다 색 게터
+		BackgroundColor GetWaterColor(int worldX, int worldY, int worldHeight);
+
+		// 바다 색 칠하기
+		void DrawWaterColor();
+
+		// 암초 색 칠하기
+		void DrawSubmergedRock();
+
+	private:
 		int mapWidth = 0;
 		int mapHeight = 0;
 

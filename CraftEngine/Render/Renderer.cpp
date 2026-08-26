@@ -40,20 +40,7 @@ namespace Craft
 				// 빈문자 설정 - 기존의 설정된 값 지우기
 				info.Char.AsciiChar = ' ';
 				// 색상 표기 안함
-				info.Attributes = static_cast<WORD>(BackgroundColor::Cyan);
-				
-				/*if(x%2==0)
-					info.Attributes = static_cast<WORD>(BackgroundColor::LightGreen);
-				else
-					info.Attributes = static_cast<WORD>(BackgroundColor::White);
-
-				if(x%100 == 0)
-					info.Attributes = static_cast<WORD>(BackgroundColor::Black);
-				if(y%100 == 0)
-					info.Attributes = static_cast<WORD>(BackgroundColor::Black);
-
-				if(y == 0 || x == 0 || x == width-1 || y == height -1)
-					info.Attributes = static_cast<WORD>(BackgroundColor::Red);*/
+				info.Attributes = 0;
 
 				// 그리기 순서 배열 항목 초기화
 				sortingOrderArray[index] = -1;
@@ -187,7 +174,7 @@ namespace Craft
 			{
 				for (int localX = localStartX; localX < localEndX; ++localX)
 				{
-					const Pixel& pixel = image.At(localX, localY);
+					const Pixel& pixel = image.pixels[localY * image.width + localX];
 
 					// 픽셀이 투명하면 스킵
 					if (pixel.transparent)

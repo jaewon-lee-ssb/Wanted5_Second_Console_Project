@@ -66,7 +66,7 @@ namespace
 		while (true)
 		{
 			Craft::Pixel& pixel = image.At(x - minX, y - minY);
-			pixel.color = Craft::BackgroundColor::LightCyan;
+			pixel.color = Craft::BackgroundColor::LightGray;
 			pixel.transparent = false;
 
 			if (x == endX && y == endY)

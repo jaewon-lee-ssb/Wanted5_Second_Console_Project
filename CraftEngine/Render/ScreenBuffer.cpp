@@ -90,7 +90,7 @@ namespace Craft
 
 		FillConsoleOutputAttribute(
 			screenBuffer,
-			static_cast<WORD>(BackgroundColor::Cyan),
+			0,
 			cellCount,
 			coord,
 			&writtenCount
