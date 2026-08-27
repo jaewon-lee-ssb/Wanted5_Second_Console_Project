@@ -17,7 +17,7 @@ void GameLevel::OnInitialized()
 		Craft::Engine::Get().Quit();
 	}
 
-	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 10.f));
+	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 30.f));
 	player->SetTileMap(map);
 
 	if (GetCamera())

@@ -22,9 +22,15 @@ using namespace Craft;
 Player::Player(const Vector2F& position)
 	: Actor(PixelImage{}, position, Utility::ActorTags::Player)
 {
+	playerSpriteAnimation.resize(static_cast<int>(PlayerState::Count));
+
 	// 플레이어 이미지 지정
-	playerIdleImage = TextImageLoader::Load(playerIdleFilename);
-	ChangeImage(playerIdleImage);
+	playerSpriteAnimation[static_cast<int>(PlayerState::Idle)] = (TextImageLoader::LoadAnimation(playerIdleFilename));
+
+	playerSpriteAnimation[static_cast<int>(PlayerState::Swim)] = (TextImageLoader::LoadAnimation(playerSwimFilename));
+
+	currentStateIndex = static_cast<int>(PlayerState::Idle);
+	ChangeImage(playerSpriteAnimation[currentStateIndex][0]);
 
 	// 0 - 왼쪽
 	playerAttackPoint[0] = Vector2F(GetPosition().x - GetPivot().x, GetPosition().y);
@@ -39,7 +45,16 @@ void Player::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	animationElapsedTime += deltaTime;
 
+	if (!playerSpriteAnimation[currentStateIndex].empty() && animationElapsedTime >= animationFrameTime)
+	{
+		animationElapsedTime -= animationFrameTime;
+
+		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % playerSpriteAnimation[currentStateIndex].size();
+
+		ChangeImage(playerSpriteAnimation[currentStateIndex][currentAnimationSpriteIndex]);
+	}
 
 	// 종료 처리.
 	if (Input::Get().GetKeyDown(VK_ESCAPE))
@@ -57,10 +72,12 @@ void Player::Tick(float deltaTime)
 	if (Input::Get().GetKey('D'))
 	{
 		playerMoveDir.x = 1.0f;
+		flipX = true;
 	}
 	if (Input::Get().GetKey('A'))
 	{
 		playerMoveDir.x = -1.0f;
+		flipX = false;
 	}
 	if (Input::Get().GetKey('W'))
 	{
@@ -70,11 +87,21 @@ void Player::Tick(float deltaTime)
 	{
 		playerMoveDir.y = 1.0f;
 	}
+	if (std::abs(playerMoveDir.Length()) > 0)
+	{
+		currentStateIndex = static_cast<int>(PlayerState::Swim);
+	}
+	else
+	{
+		currentStateIndex = static_cast<int>(PlayerState::Idle);
+	}
+
 
 	if (Input::Get().GetKeyDown(VK_LBUTTON))
 	{
 		// 방향 체크해서 공격위치 조정
 		Vector2F attackPosition = mousePosition.x < position.x ? playerAttackPoint[0] : playerAttackPoint[1];
+		flipX = mousePosition.x < position.x ? false : true;
 
 		// 마우스 위치 예외 처리.
 		if (attackPosition == mousePosition)

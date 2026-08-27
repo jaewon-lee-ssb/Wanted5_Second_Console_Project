@@ -84,12 +84,13 @@ namespace Craft
 		SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	}
 
-	void Renderer::SubmitWorld(const PixelImage& image, const Vector2F& position, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
+	void Renderer::SubmitWorld(const PixelImage& image, const Vector2F& position, bool flipX, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
 	{
 		// 그럼 명령 객체 생성.
 		RenderCommand command;
 		command.image = &image;
 		command.position = position;
+		command.flipX = flipX;
 		command.pivot = pivot;
 		command.sortingOrder = sortingOrder;
 		command.renderSpace = renderSpace;
@@ -151,20 +152,28 @@ namespace Craft
 				continue;
 			}
 
+			// 이미지의 주소를 저장(읽기 전용)
 			const PixelImage& image = *command.image;
 
-			//const Vector2I& drawSize = command.renderSpace == RenderSpace::World ? viewportSize : screenSize;
+			// 현재 화면의 크기
 			const Vector2I& drawSize = screenSize;
 
+			// 액터들은 중심을 기준으로 그리기때문에 왼쪽 위 좌표는 현재 좌표에서 피봇을 빼준다.
 			const int startX = static_cast<int>(command.position.x - command.pivot.x);
 			const int startY = static_cast<int>(command.position.y - command.pivot.y);
 
+			// 이미지를 그리기 시작할 픽셀위치
+			// 이미지가 왼쪽으로 반 짤려있는 상황이면 보이는 픽셀번호 부터 그리기
 			const int localStartX = (std::max)(0, -startX);
 			const int localStartY = (std::max)(0, -startY);
 
+			// 마찬가지로 반대쪽으로도 짤린곳을 체크해준다.
 			const int localEndX = (std::min)(image.width, drawSize.x - startX);
 			const int localEndY = (std::min)(image.height, drawSize.y - startY);
 
+
+
+			// 말이 안되는 위치인 애들 예외처리
 			if (localStartX >= localEndX || localStartY >= localEndY)
 			{
 				continue;
@@ -174,7 +183,9 @@ namespace Craft
 			{
 				for (int localX = localStartX; localX < localEndX; ++localX)
 				{
-					const Pixel& pixel = image.pixels[localY * image.width + localX];
+					const int sourceX = command.flipX ? image.width - 1 - localX : localX;
+
+					const Pixel& pixel = image.pixels[localY * image.width + sourceX];
 
 					// 픽셀이 투명하면 스킵
 					if (pixel.transparent)

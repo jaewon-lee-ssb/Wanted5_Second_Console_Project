@@ -44,7 +44,7 @@ namespace Craft
 		// 렌더러에 그릴 데이터 전달.
 		if(GetOwner()->GetCamera())
 		{ 
-			Renderer::Get().SubmitWorld(image, GetOwner()->GetCamera()->WorldToScreen(position), pivot, sortingOrder);
+			Renderer::Get().SubmitWorld(image, GetOwner()->GetCamera()->WorldToScreen(position), flipX, pivot, sortingOrder);
 		}
 	}
 

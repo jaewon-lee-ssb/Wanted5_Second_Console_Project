@@ -4,6 +4,7 @@
 
 #include <array>
 
+
 namespace Craft
 {
 	class TileMap;
@@ -17,6 +18,7 @@ class Player : public Craft::Actor
 	{
 		Idle,
 		Swim,
+		Count,
 	};
 
 public:
@@ -36,6 +38,13 @@ private:
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 
+	// 플레이어 애니메이션 관련 변수
+	float animationElapsedTime = 0.f;
+	float animationFrameTime = 0.2f;
+
+	int currentAnimationSpriteIndex = 0;
+	int currentStateIndex = 0;
+
 	// 플레이어 공격관련
 	std::array<Craft::Vector2F, 2> playerAttackPoint;
 
@@ -46,6 +55,8 @@ private:
 	std::vector<std::vector<Craft::PixelImage>> playerSpriteAnimation;
 
 
-	std::string playerIdleFilename = "Actors/Player/player_swim_left.txt";
+	// 플레이어 이미지 파일이름
+	std::string playerIdleFilename = "Actors/Player/player_idle.txt";
+	std::string playerSwimFilename = "Actors/Player/player_swim.txt";
 };
 

@@ -28,5 +28,12 @@ namespace Craft
         {
             return pixels.at(y * width + x);
         }
+
+        void Reset()
+        {
+            width = 0;
+            height = 0;
+            pixels.clear();
+        }
     };
 }

@@ -4,12 +4,13 @@
 #include <Resource/PixelImage.h>
 
 #include <string>
+#include <vector>
 
 namespace Craft
 {
     class CRAFT_API TextImageLoader
     {
     public:
-        static PixelImage Load(const std::string& filename);
+        static std::vector<PixelImage> LoadAnimation(const std::string& filename);
     };
 }

@@ -110,6 +110,9 @@ namespace Craft
 		// 액터 위치.
 		Vector2F position;
 
+		// 좌우반전
+		bool flipX = false;
+
 		// 피벗 위치
 		Vector2F pivot;
 

@@ -5,8 +5,16 @@
 
 namespace Craft
 {
-	PixelImage TextImageLoader::Load(const std::string& filename)
+	std::vector<PixelImage> TextImageLoader::LoadAnimation(const std::string& filename)
 	{
+		// 데이터를 불러와서 저장할 벡터
+		std::vector<PixelImage> animationVector;
+
+		// 이미지의 길이값
+		int loadedWidth = 0;
+		int loadedHeight = 0;
+
+		// 스프라이트 이미지를 저장할 임시 변수
 		PixelImage resultImage;
 
 		// 최종경로
@@ -19,97 +27,85 @@ namespace Craft
 		if (!file.is_open())
 		{
 			// 오류 출력 또는 로그 기록
-			return PixelImage{};
+			return {};
 		}
 
-		// 파일 전체 크기 확인.
-		file.seekg(0, std::ios_base::end);
-		const std::streampos fileSize = file.tellg();
+		// 한 줄씩 읽어올 문자열
+		std::string line;
 
-		if (fileSize <= 0)
-		{
-			return PixelImage{};
-		}
-
-		// 파일 위치를 첫 위치로 되돌리기.
-		file.seekg(0, std::ios_base::beg);
-
-		// 파일 내용 전체를 읽기 위한 변수.
-		std::string buffer;
-		buffer.resize(static_cast<size_t>(fileSize));
-
-		// 파일 내용 전체 읽기.
-		file.read(&buffer[0], fileSize);
-
-		// 문자열 buffer를 한 문자씩 읽으면서 처리.
-		int index = 0;
-
-		size_t lineEnd = buffer.find('\n');
 		
-		if (lineEnd == std::string::npos)
+
+		while (std::getline(file, line))
 		{
-			resultImage.width = static_cast<int>(buffer.size());
-		}
-		else
-		{
-			resultImage.width = static_cast<int>(lineEnd);
-
-			if (resultImage.width > 0 &&
-				buffer[resultImage.width - 1] == '\r')
+			// \r 개행 문자 삭제처리
+			if (!line.empty() && line.back() == '\r')
 			{
-				--resultImage.width;
-			}
-		}
-
-		while (true)
-		{
-			// 종료 조건.
-			if (index >= fileSize)
-			{
-				break;
-			}
-
-			// 현재 순번의 문자 값 읽기.
-			char mapCharacter = buffer[index];
-
-			// 다음 글자를 읽기위한 준비.
-			++index;
-
-			// Windows의 개행 문자는 '\n'이 아니라 '\r\n'이기 때문에
-			// \r은 건너뛰기.
-			if (mapCharacter == '\r')
-			{
-				continue;
-			}
-
-			// 개행 문자 처리 - 좌표 값 업데이트.
-			if (mapCharacter == '\n')
-			{
-				++resultImage.height;
-				continue;
-			}
-
-			Pixel pixel;
-
-			// 읽은 문자 별로 처리.
-			if (mapCharacter != '.')
-			{
-				pixel.color = ParseColor(mapCharacter);
-				pixel.transparent = false;
+				line.pop_back();
 			}
 			
-			resultImage.pixels.emplace_back(pixel);
+			// 스프라이트 구분자 검사
+			if (line == "#")
+			{
+				// 빈 이미지인데 저장하려고 하면 오류
+				if (resultImage.pixels.empty() || loadedWidth <= 0 || loadedHeight <= 0)
+				{
+					return {};
+				}
 
+				resultImage.width = loadedWidth;
+				resultImage.height = loadedHeight;
+
+				loadedWidth = 0;
+				loadedHeight = 0;
+
+				animationVector.emplace_back(resultImage);
+				resultImage.Reset();
+
+				continue;
+			}
+
+			// 문자열이 비어있으면 종료
+			if (line.empty())
+			{
+				return animationVector;
+			}
+
+			
+
+			// 맵 가로길이가 같은지 확인
+			if (loadedWidth == 0)
+			{
+				loadedWidth = static_cast<int>(line.size());
+			}
+			else if (line.size() != loadedWidth)
+			{
+				return animationVector;
+			}
+
+			
+
+			for (char character : line)
+			{
+				
+
+				Pixel resultPixel;
+
+				if (character != '.')
+				{
+					resultPixel.color = ParseColor(character);
+					resultPixel.transparent = false;
+				}
+
+				resultImage.pixels.emplace_back(resultPixel);
+			}
+
+			++loadedHeight;
 
 		}
 
-		if (!buffer.empty() && buffer.back() != '\n')
-		{
-			++resultImage.height;
-		}
-
+		// 파일 닫기
 		file.close();
 
-		return resultImage;
+		return animationVector;
 	}
 }
