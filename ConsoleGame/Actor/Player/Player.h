@@ -13,6 +13,12 @@ class Player : public Craft::Actor
 {
 	TYPE_DECLARATIONS(Player, Actor)
 
+	enum class PlayerState
+	{
+		Idle,
+		Swim,
+	};
+
 public:
 	Player(const Craft::Vector2F& position);
 	~Player() = default;
@@ -37,8 +43,9 @@ private:
 	std::weak_ptr<const Craft::TileMap> tileMap;
 
 	// 플레이어 이미지
-	Craft::PixelImage playerIdleImage;
+	std::vector<std::vector<Craft::PixelImage>> playerSpriteAnimation;
 
-	std::string playerIdleFilename = "Actors/Player/player_idle.txt";
+
+	std::string playerIdleFilename = "Actors/Player/player_swim_left.txt";
 };
 

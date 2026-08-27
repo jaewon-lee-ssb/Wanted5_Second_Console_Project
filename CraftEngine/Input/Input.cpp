@@ -139,8 +139,7 @@ namespace Craft
 
 				for (const MouseButton& button : mouseButtons)
 				{
-					const bool isKeyDown =
-						(mouseEvent.dwButtonState & button.buttonMask) != 0;
+					const bool isKeyDown = (mouseEvent.dwButtonState & button.buttonMask) != 0;
 					UpdateKeyState(button.keyCode, isKeyDown);
 				}
 				break;

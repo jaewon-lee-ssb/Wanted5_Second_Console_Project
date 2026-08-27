@@ -51,7 +51,7 @@ namespace Craft
 		// 바다 색 게터
 		BackgroundColor GetWaterColor(int worldX, int worldY, int worldHeight);
 
-		// 바다 색 칠하기
+		// 깊이에 따른 물 색 칠하기
 		void DrawWaterColor();
 
 		// 암초 색 칠하기
@@ -66,8 +66,10 @@ namespace Craft
 		int tileWidth = 8;
 		int tileHeight = 4;
 
+		// 타일의 정보가 저장되는 배열
 		std::vector<TileType> tiles;
 
+		// 타일맵의 이미지
 		PixelImage mapImage;
 	};
 }

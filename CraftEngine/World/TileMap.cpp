@@ -43,8 +43,6 @@ namespace Craft
 			{
 				line.pop_back();
 			}
-			
-
 
 			// 맵 가로길이가 같은지 확인
 			if (loadedWidth == 0)
@@ -109,8 +107,7 @@ namespace Craft
 
 	TileType TileMap::GetTile(int x, int y) const
 	{
-		if (x < 0 || x >= mapWidth ||
-			y < 0 || y >= mapHeight)
+		if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
 		{
 			return TileType::Wall;
 		}
@@ -148,9 +145,9 @@ namespace Craft
 
 		// Bounds가 걸치는 타일 좌표 범위 계산
 		const int leftTile = static_cast<int>(std::floor(localLeft / tileWidth));
-		const int rightTile = static_cast<int>(std::ceil(localRight / tileWidth)) - 1;
+		const int rightTile = static_cast<int>(std::floor(localRight / tileWidth));
 		const int topTile = static_cast<int>(std::floor(localTop / tileHeight));
-		const int bottomTile = static_cast<int>(std::ceil(localBottom / tileHeight)) - 1;
+		const int bottomTile = static_cast<int>(std::floor(localBottom / tileHeight));
 
 		// 해당 범위에 벽이 하나라도 있으면 충돌
 		for (int tileY = topTile; tileY <= bottomTile; ++tileY)
@@ -192,16 +189,10 @@ namespace Craft
 		const float depth =	static_cast<float>(worldY) / static_cast<float>(worldHeight); 
 
 		const int pattern = (worldX * 17 + worldY * 31) % 97;
-		const bool alternate = ((worldX + worldY) % 2) == 0;
 
 		if (pattern == 0)
 		{
 			return BackgroundColor::LightCyan;
-		}
-
-		if (depth < 0.2f)
-		{
-			return alternate ? BackgroundColor::LightCyan : BackgroundColor::Cyan;
 		}
 
 		if (depth < 0.55f)
