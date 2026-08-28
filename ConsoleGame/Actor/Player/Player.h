@@ -34,7 +34,8 @@ private:
 
 private:
 	// 플레이어 이동관련
-	float playerMoveSpeed = 70.f;
+	float playerMoveSpeedX = 70.f;
+	float playerMoveSpeedY = 35.f;
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 
@@ -48,10 +49,10 @@ private:
 	// 플레이어 공격관련
 	std::array<Craft::Vector2F, 2> playerAttackPoint;
 
-	// 타일 맵
+	// 타일 맵 참조
 	std::weak_ptr<const Craft::TileMap> tileMap;
 
-	// 플레이어 이미지
+	// 플레이어 애니메이션
 	std::vector<std::vector<Craft::PixelImage>> playerSpriteAnimation;
 
 

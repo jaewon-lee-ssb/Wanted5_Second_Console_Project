@@ -136,10 +136,11 @@ void Player::Move(float deltaTime)
 		return;
 	}
 
-	Vector2F movement = playerMoveDir.Normalize() * playerMoveSpeed * deltaTime;
+	Vector2F movement = Vector2F::Zero;
 
 	Vector2F newPosition = GetPosition();
 
+	movement.x = playerMoveDir.Normalize().x * playerMoveSpeedX * deltaTime;
 	newPosition.x += movement.x;
 
 	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
@@ -151,6 +152,7 @@ void Player::Move(float deltaTime)
 		newPosition.x = position.x;
 	}
 
+	movement.y = playerMoveDir.Normalize().y * playerMoveSpeedY * deltaTime;
 	newPosition.y += movement.y;
 	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
 	{
