@@ -138,7 +138,7 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i </Command>
     <ClInclude Include="UIManager\UIManager.h" />
     <ClInclude Include="Utility\ActorTags.h" />
     <ClInclude Include="Utility\CollisionContext.h" />
-    <ClInclude Include="Utility\Utility.h" />
+    <ClInclude Include="Utility\Random.h" />
     <ClInclude Include="World\TileMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -83,7 +83,7 @@
     <ClInclude Include="Core\CraftObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\Utility.h">
+    <ClInclude Include="Utility\Random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Physics\CollisionSystem.h">

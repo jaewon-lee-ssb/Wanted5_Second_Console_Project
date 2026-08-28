@@ -16,6 +16,7 @@ private:
 	virtual void Tick(float deltaTime) override;
 
 	void FollowPath(float deltaTime);
+	void FindRandomPatrolPoint();
 
 private:
 	// 패트롤 위치

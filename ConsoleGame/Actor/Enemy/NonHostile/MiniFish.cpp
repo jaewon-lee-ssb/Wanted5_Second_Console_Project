@@ -1,6 +1,7 @@
 ﻿#include <Actor/Enemy/NonHostile/MiniFish.h>
 
 #include <Resource/TextImageLoader.h>
+#include <Utility/Random.h>
 
 #include <World/TileMap.h>
 
@@ -12,6 +13,12 @@ MiniFish::MiniFish(const Craft::Vector2F& position)
 	currentStateIndex = static_cast<int>(EnemyState::Patrol);
 	ChangeImage(enemySpriteAnimation[currentStateIndex][0]);
 
+
+	// 속도 지정
+	enemyMoveSpeedX = 30.f;
+	enemyMoveSpeedY = 15.f;
+
+	patrolOrigin = position;
 	
 }
 
@@ -19,20 +26,28 @@ void MiniFish::BeginPlay()
 {
 	super::BeginPlay();
 
-	auto map = tileMap.lock();
+	/*auto map = tileMap.lock();
 
 	if (map)
 	{
-		enemyMoveSpeedX = 30.f;
-		enemyMoveSpeedY = 15.f;
+		
 		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(600.f, 30.f), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
-	}
+	}*/
 }
 
 void MiniFish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
-	FollowPath(deltaTime);
+	
+	if (patrolPath.empty())
+	{
+		FindRandomPatrolPoint();
+	}
+	else
+	{
+		FollowPath(deltaTime);
+	}
+	
 
 	if (auto map = tileMap.lock())
 	{
@@ -60,8 +75,11 @@ void MiniFish::FollowPath(float deltaTime)
 		return;
 	}
 
+	// 목표 지점에 도착하면 초기화
 	if (currentPathIndex >= patrolPath.size())
 	{
+		patrolPath.clear();
+		currentPathIndex = 0;
 		return;
 	}
 
@@ -106,5 +124,16 @@ void MiniFish::FollowPath(float deltaTime)
 	{
 		patrolPath.clear();
 		currentPathIndex = 0;
+	}
+}
+
+void MiniFish::FindRandomPatrolPoint()
+{
+	const float randomTargetX = Utility::RandomRange(-patrolRadiusX, patrolRadiusX);
+	const float randomTargetY = Utility::RandomRange(-patrolRadiusY, patrolRadiusY);
+
+	if (auto map = tileMap.lock())
+	{
+		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(patrolOrigin.x + randomTargetX, patrolOrigin.y + randomTargetY), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
 	}
 }
