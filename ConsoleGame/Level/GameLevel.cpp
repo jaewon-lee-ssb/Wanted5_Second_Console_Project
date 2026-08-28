@@ -1,6 +1,7 @@
 ﻿#include <Level/GameLevel.h>
 
 #include <Actor/Player/Player.h>
+#include <Actor/Enemy/NonHostile/MiniFish.h>
 
 #include <Engine/Engine.h>
 #include <Camera/Camera.h>
@@ -17,6 +18,8 @@ void GameLevel::OnInitialized()
 		Craft::Engine::Get().Quit();
 	}
 
+	map->SetPathDebugEnabled(true);
+
 	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 30.f));
 	player->SetTileMap(map);
 
@@ -27,7 +30,9 @@ void GameLevel::OnInitialized()
 		GetCamera()->SetMapSize(Craft::Vector2F(map->GetWidth(), map->GetHeight()));
 	}
 
-	
+	auto fish = SpawnActor<MiniFish>(Craft::Vector2F(100.f, 60.f));
+	fish->SetTileMap(map);
+
 }
 
 void GameLevel::BeginPlay()

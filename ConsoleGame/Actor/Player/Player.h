@@ -57,7 +57,7 @@ private:
 
 
 	// 플레이어 이미지 파일이름
-	std::string playerIdleFilename = "Actors/Player/player_idle.txt";
-	std::string playerSwimFilename = "Actors/Player/player_swim.txt";
+	const std::string playerIdleFilename = "Actors/Player/player_idle.txt";
+	const std::string playerSwimFilename = "Actors/Player/player_swim.txt";
 };
 

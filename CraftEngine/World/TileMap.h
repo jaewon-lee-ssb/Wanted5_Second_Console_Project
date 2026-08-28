@@ -11,6 +11,23 @@
 
 namespace Craft
 {
+	struct OpenNode
+	{
+		int index = -1;
+		int gCost = 0;
+		int fCost = 0;
+	};
+
+	struct CompareOpenNode
+	{
+		bool operator()(const OpenNode& lhs, const OpenNode& rhs) const
+		{
+			// priority_queue는 기본적으로 큰 값부터 꺼내므로
+			// 비교 방향을 반대로 설정
+			return lhs.fCost > rhs.fCost;
+		}
+	};
+
 	enum class TileType : uint8_t
 	{
 		Empty,
@@ -42,9 +59,18 @@ namespace Craft
 		// 벽과 충돌 체크 함수
 		bool OverlapsSolid(const Bounds& worldBounds) const;
 
-		virtual void Draw() override;
+		// 경로 찾는 함수.
+		std::vector<Vector2I> FindPath(const Vector2F& startWorldPosition, const Vector2F& endWorldPosition, float imageWidth, float imageHeight) const;
+
+		// A* 경로 디버그 표시
+		void SetPathDebugEnabled(bool enabled);
+		void QueueDebugPath(const std::vector<Vector2I>& path, size_t startIndex = 0);
 
 	private:
+
+		// 그리기함수
+		virtual void Draw() override;
+
 		// 벽이나 물 색 변경
 		void BuildVisualImage();
 
@@ -56,6 +82,9 @@ namespace Craft
 
 		// 암초 색 칠하기
 		void DrawSubmergedRock();
+
+		// A* 경로 디버그용 타일 이미지 생성
+		void BuildPathDebugImage();
 
 	private:
 		// 맵의 가로 세로길이
@@ -71,6 +100,11 @@ namespace Craft
 
 		// 타일맵의 이미지
 		PixelImage mapImage;
+
+		// A* 경로 디버그 표시
+		bool isPathDebugEnabled = false;
+		std::vector<Vector2I> debugPathTiles;
+		PixelImage debugPathTileImage;
 	};
 }
 

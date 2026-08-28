@@ -1,7 +1,14 @@
 ﻿#include <World/TileMap.h>
+#include <Camera/Camera.h>
+#include <Level/Level.h>
+#include <Render/Renderer.h>
 
 #include <fstream>
 #include <cassert>
+#include <algorithm>
+#include <limits>
+#include <queue>
+
 
 namespace Craft
 {
@@ -97,6 +104,7 @@ namespace Craft
 		mapImage.pixels.assign(static_cast<size_t>(mapImage.width) * static_cast<size_t>(mapImage.height), Pixel{});
 
 		BuildVisualImage();
+		BuildPathDebugImage();
 
 
 		file.close();
@@ -164,9 +172,205 @@ namespace Craft
 		return false;
 	}
 
+	std::vector<Vector2I> TileMap::FindPath(const Vector2F& startWorldPosition, const Vector2F& endWorldPosition, float actorWidth, float actorHeight) const
+	{
+		std::vector<Vector2I> resultPath;
+
+		int startX = 0;
+		int startY = 0;
+		int endX = 0;
+		int endY = 0;
+
+		WorldToTile(startWorldPosition, startX, startY);
+		WorldToTile(endWorldPosition, endX, endY);
+
+		// 시작점과 목적지에 액터가 들어갈수 있나 체크
+		Vector2F nodeEndPosition = TileToWorld(endX, endY) + Vector2F(tileWidth * 0.5f, tileHeight * 0.5f);
+
+		Bounds startBounds(startWorldPosition.x - actorWidth * 0.5f, startWorldPosition.x + actorWidth * 0.5f,
+			startWorldPosition.y - actorHeight * 0.5f, startWorldPosition.y + actorHeight * 0.5f);
+		Bounds endBounds(nodeEndPosition.x - actorWidth * 0.5f, nodeEndPosition.x + actorWidth * 0.5f,
+			nodeEndPosition.y - actorHeight * 0.5f, nodeEndPosition.y + actorHeight * 0.5f);
+
+		if (OverlapsSolid(startBounds) || OverlapsSolid(endBounds))
+		{
+			return resultPath;
+		}
+
+		const int startIndex = startY * mapWidth + startX;
+		const int endIndex = endY * mapWidth + endX;
+
+		const int tileCount = mapWidth * mapHeight;
+		constexpr int infiniteCost = (std::numeric_limits<int>::max)();
+
+		std::vector<int> gCosts(tileCount, infiniteCost);
+		std::vector<int> parents(tileCount, -1);
+		std::vector<bool> closed(tileCount, false);
+
+		std::priority_queue<OpenNode, std::vector<OpenNode>, CompareOpenNode> open;
+
+		auto CalculateH = [endX, endY](int x, int y)
+			{
+				return std::abs(endX - x) + std::abs(endY - y);
+			};
+		
+		gCosts[startIndex] = 0;
+
+		open.push({ startIndex, 0, CalculateH(startX, startY) });
+
+		const Vector2I directions[] =
+		{
+			Vector2I(1, 0),
+			Vector2I(-1, 0),
+			Vector2I(0, 1),
+			Vector2I(0, -1),
+		};
+
+		while (!open.empty())
+		{
+			const OpenNode current = open.top();
+			open.pop();
+
+			// 이미 처리한 타일이면 무시
+			if (closed[current.index])
+			{
+				continue;
+			}
+
+			closed[current.index] = true;
+
+			// 목표에 도착
+			if (current.index == endIndex)
+			{
+				int pathIndex = endIndex;
+
+				while (pathIndex != -1)
+				{
+					const int pathX = pathIndex % mapWidth;
+					const int pathY = pathIndex / mapWidth;
+
+					resultPath.emplace_back(pathX, pathY);
+					pathIndex = parents[pathIndex];
+				}
+
+				// 목표부터 시작점 순서로 들어 있으므로 뒤집기.
+				std::reverse(resultPath.begin(), resultPath.end());
+
+				// 첫 번째 좌표는 현재 위치이므로 제거.
+				if (!resultPath.empty())
+				{
+					resultPath.erase(resultPath.begin());
+				}
+
+				return resultPath;
+			}
+
+			const int currentX = current.index % mapWidth;
+			const int currentY = current.index / mapWidth;
+
+			for (const Vector2I& direction : directions)
+			{
+				const int nextX = currentX + direction.x;
+				const int nextY = currentY + direction.y;
+
+				// 인덱스로 바꾸기 전에 맵 범위 검사
+				if (nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight)
+				{
+					continue;
+				}
+
+				Vector2F nodePosition = TileToWorld(nextX, nextY) + Vector2F(tileWidth * 0.5f, tileHeight * 0.5f);
+
+				Bounds actorBounds(nodePosition.x - actorWidth * 0.5f, nodePosition.x + actorWidth * 0.5f,
+					nodePosition.y - actorHeight * 0.5f, nodePosition.y + actorHeight * 0.5f);
+
+				if (OverlapsSolid(actorBounds))
+				{
+					continue;
+				}
+
+				const int nextIndex = nextY * mapWidth + nextX;
+
+				if (closed[nextIndex])
+				{
+					continue;
+				}
+
+				// 상하좌우 한 칸의 이동 비용은 1
+				const int newGCost = gCosts[current.index] + 1;
+
+				// 기존에 발견한 길보다 길다면 무시
+				if (newGCost >= gCosts[nextIndex])
+				{
+					continue;
+				}
+
+				gCosts[nextIndex] = newGCost;
+				parents[nextIndex] = current.index;
+
+				const int hCost = CalculateH(nextX, nextY);
+
+				open.push({ nextIndex, newGCost, newGCost + hCost });
+			
+			}
+		}
+
+		// Open이 비었는데 목표를 못 찾았다면 빈 경로 반환
+		return resultPath;
+	}
+
+	void TileMap::SetPathDebugEnabled(bool enabled)
+	{
+		isPathDebugEnabled = enabled;
+
+		if (!isPathDebugEnabled)
+		{
+			debugPathTiles.clear();
+		}
+	}
+
+	void TileMap::QueueDebugPath(const std::vector<Vector2I>& path, size_t startIndex)
+	{
+		if (!isPathDebugEnabled || startIndex >= path.size())
+		{
+			return;
+		}
+
+		debugPathTiles.insert(debugPathTiles.end(), path.begin() + startIndex, path.end());
+	}
+
 	void TileMap::Draw()
 	{
 		super::Draw();
+
+		if (!isPathDebugEnabled || debugPathTiles.empty())
+		{
+			debugPathTiles.clear();
+			return;
+		}
+
+		auto owner = GetOwner();
+
+		if (!owner || !owner->GetCamera())
+		{
+			debugPathTiles.clear();
+			return;
+		}
+
+		for (const Vector2I& tile : debugPathTiles)
+		{
+			const Vector2F screenPosition = owner->GetCamera()->WorldToScreen(TileToWorld(tile.x, tile.y));
+
+			Renderer::Get().SubmitWorld(
+				debugPathTileImage,
+				screenPosition,
+				false,
+				Vector2F::Zero,
+				sortingOrder);
+		}
+
+		// 매 프레임 적들이 현재 경로를 다시 등록하도록 큐를 비운다.
+		debugPathTiles.clear();
 	}
 
 	void TileMap::BuildVisualImage()
@@ -248,19 +452,26 @@ namespace Craft
 
 						Pixel& pixel = mapImage.pixels[pixelY * mapImage.width + pixelX];
 						pixel.transparent = false;
-						BackgroundColor color = BackgroundColor::Purple;
+						BackgroundColor color = BackgroundColor::LightGray;
 
-						// 아래쪽과 오른쪽은 그림자
-						if ((exposedDown && localY == tileHeight - 1) || (exposedRight && localX == tileWidth - 1))
+						const bool isSandSurface = exposedUp && localY == 0;
+						const bool isShadowEdge =
+							(exposedDown && localY == tileHeight - 1) ||
+							(exposedRight && localX == tileWidth - 1);
+						const bool isLightEdge = exposedLeft && localX == 0;
+
+						// 바닥 윗면은 모래색, 암석의 아래와 오른쪽은 짙은 회색 그림자로 표현
+						if (isSandSurface)
 						{
-							color = BackgroundColor::Blue;
+							color = BackgroundColor::Brown;
 						}
-
-						// 위쪽과 왼쪽은 빛을 받는 면
-						if ((exposedUp && localY == 0) ||
-							(exposedLeft && localX == 0))
+						else if (isShadowEdge)
 						{
-							color = BackgroundColor::LightMagenta;
+							color = BackgroundColor::DarkGray;
+						}
+						else if (isLightEdge)
+						{
+							color = BackgroundColor::White;
 						}
 
 						const bool isBoundary =
@@ -276,7 +487,7 @@ namespace Craft
 
 							if (pattern == 0)
 							{
-								color = BackgroundColor::Blue;
+								color = BackgroundColor::DarkGray;
 							}
 						}
 
@@ -284,6 +495,21 @@ namespace Craft
 					}
 				}
 			}
+		}
+	}
+
+	void TileMap::BuildPathDebugImage()
+	{
+		debugPathTileImage.width = tileWidth;
+		debugPathTileImage.height = tileHeight;
+		debugPathTileImage.pixels.assign(
+			static_cast<size_t>(tileWidth) * static_cast<size_t>(tileHeight),
+			Pixel{});
+
+		for (Pixel& pixel : debugPathTileImage.pixels)
+		{
+			pixel.color = BackgroundColor::Red;
+			pixel.transparent = false;
 		}
 	}
 
