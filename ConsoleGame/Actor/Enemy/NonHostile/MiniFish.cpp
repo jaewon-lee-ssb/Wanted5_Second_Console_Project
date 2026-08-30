@@ -8,6 +8,7 @@
 MiniFish::MiniFish(const Craft::Vector2F& position)
 	: super(position)
 {
+	enemyState = EnemyState::Patrol;
 	enemySpriteAnimation[static_cast<int>(EnemyState::Patrol)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
 
 	currentStateIndex = static_cast<int>(EnemyState::Patrol);
@@ -19,43 +20,48 @@ MiniFish::MiniFish(const Craft::Vector2F& position)
 	enemyMoveSpeedY = 15.f;
 
 	patrolOrigin = position;
-	
+	 
+	// 패트롤 지연타임
+	patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
 }
 
 void MiniFish::BeginPlay()
 {
 	super::BeginPlay();
 
-	/*auto map = tileMap.lock();
 
-	if (map)
-	{
-		
-		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(600.f, 30.f), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
-	}*/
 }
 
 void MiniFish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 	
-	if (patrolPath.empty())
-	{
-		FindRandomPatrolPoint();
-	}
-	else
-	{
-		FollowPath(deltaTime);
-	}
 	
+	switch (enemyState)
+	{
+	case EnemyState::Patrol:
+		UpdatePatrol(deltaTime);
+		break;
+	case EnemyState::Flee:
+		UpdateFlee(deltaTime);
+		break;
+	case EnemyState::Return:
+		UpdateReturn(deltaTime);
+		break;
+	}
 
+	
+	// 디버그 경로 출력
 	if (auto map = tileMap.lock())
 	{
 		map->QueueDebugPath(patrolPath, currentPathIndex);
 	}
 
+	// 애니메이션 시간 추가
 	animationElapsedTime += deltaTime;
 
+
+	// 애니메이션 프레임 교체
 	if (!enemySpriteAnimation[currentStateIndex].empty() && animationElapsedTime >= animationFrameTime)
 	{
 		animationElapsedTime -= animationFrameTime;
@@ -63,6 +69,28 @@ void MiniFish::Tick(float deltaTime)
 		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % enemySpriteAnimation[currentStateIndex].size();
 
 		ChangeImage(enemySpriteAnimation[currentStateIndex][currentAnimationSpriteIndex]);
+	}
+}
+
+void MiniFish::DetectPlayer()
+{
+	if (auto player = target.lock())
+	{
+		const Craft::Vector2F diff = player->GetPosition() - GetPosition();
+
+		constexpr float verticalScale = 2.f;
+
+		const float adjustedX = diff.x;
+		const float adjustedY = diff.y * verticalScale;
+
+		const float adjustedDistanceSquared = adjustedX * adjustedX + adjustedY * adjustedY;
+
+		const float detectDistanceSquared = detectRadius * detectRadius;
+
+		if (adjustedDistanceSquared <= detectDistanceSquared)
+		{
+			enemyState = EnemyState::Flee;
+		}
 	}
 }
 
@@ -136,4 +164,35 @@ void MiniFish::FindRandomPatrolPoint()
 	{
 		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(patrolOrigin.x + randomTargetX, patrolOrigin.y + randomTargetY), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
 	}
+}
+
+void MiniFish::UpdatePatrol(float deltaTime)
+{
+
+
+
+	if (patrolPath.empty())
+	{
+		patrolWaitTime -= deltaTime;
+
+		if (patrolWaitTime <= 0.f)
+		{
+			FindRandomPatrolPoint();
+			patrolWaitTime = patrolRetryInterval;
+		}
+	}
+	else
+	{
+		FollowPath(deltaTime);
+	}
+}
+
+void MiniFish::UpdateFlee(float deltaTime)
+{
+
+}
+
+void MiniFish::UpdateReturn(float deltaTime)
+{
+
 }

@@ -1,13 +1,18 @@
 ---
 name: workspace-handoff
-description: Create and publish a self-contained handoff note to the Wanted5 second project's fixed Notion handoff page when the user is moving to another workspace, computer, or Codex task.
+description: Read or publish the Wanted5 second project's fixed Notion handoff page when the user wants to resume work or move to another workspace, computer, or Codex task.
 ---
 
 # Workspace Handoff
 
-Create a self-contained handoff note that lets a fresh Codex task continue without access to the current conversation, then publish it to the project's fixed Notion page.
+Use the project's fixed Notion handoff page to resume work in a fresh Codex task or to publish a self-contained note for the next task.
 
-Use this skill when the user says phrases such as "작업 공간 이동할게", "집에서 이어갈게", "새 대화에서 계속할게", or asks for a progress handoff or continuation summary.
+Use this skill when the user says phrases such as "인계 내용 읽어줘", "이어서 작업할게", "작업 공간 이동할게", "집에서 이어갈게", "새 대화에서 계속할게", or asks for a progress handoff or continuation summary.
+
+Choose the mode from the user's intent:
+
+- **Resume:** Read the existing handoff and use it to determine the current state and recommended next work. This is the default when entering a new workspace or task to continue earlier work.
+- **Publish:** Gather the current state and replace the existing handoff for a future workspace or task.
 
 ## Gather the current state
 
@@ -26,6 +31,18 @@ Use this skill when the user says phrases such as "작업 공간 이동할게", 
 - Handoff page URL: `https://app.notion.com/p/3ca02694383480a98bb0e0ac60890e90?pvs=204`
 
 Use the page ID rather than searching by title so that the similarly named legacy page `작업 현황 인계` is never changed accidentally. Fetch the fixed page before every update and verify that its title and parent still match the values above. If they do not match, stop without writing and explain the mismatch.
+
+## Resume from the handoff
+
+Fetch the fixed handoff page by ID and verify that its title and parent match the values above. If they do not match, stop and explain the mismatch instead of searching for or assuming another page.
+
+- Read the page as orientation, then inspect the available repository with read-only commands to verify the current branch, status, recent commit, upstream synchronization, and any files named as the next inspection targets.
+- Treat the live repository as authoritative for facts that may have changed since the handoff. Clearly report differences such as new commits, missing local-only changes, or new uncommitted files.
+- Summarize the verified current objective, completed work, current implementation state, and recommended next action. Distinguish facts verified now from claims retained only from the handoff.
+- Follow the handoff's requested inspection order when it remains applicable, but do not perform builds, edits, commits, pushes, or other mutations unless the user separately authorizes them.
+- If the handoff says the next goal is undecided, present the current state and ask what the user wants to do next rather than inventing a feature.
+
+Reading the handoff is read-only and does not authorize replacing its content.
 
 ## Produce and publish the handoff
 

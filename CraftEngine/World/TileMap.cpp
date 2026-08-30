@@ -184,6 +184,14 @@ namespace Craft
 		WorldToTile(startWorldPosition, startX, startY);
 		WorldToTile(endWorldPosition, endX, endY);
 
+		if (startX < 0 || startX >= mapWidth ||
+			startY < 0 || startY >= mapHeight ||
+			endX < 0 || endX >= mapWidth ||
+			endY < 0 || endY >= mapHeight)
+		{
+			return {};
+		}
+
 		// 시작점과 목적지에 액터가 들어갈수 있나 체크
 		Vector2F nodeEndPosition = TileToWorld(endX, endY) + Vector2F(tileWidth * 0.5f, tileHeight * 0.5f);
 
@@ -230,6 +238,7 @@ namespace Craft
 		{
 			const OpenNode current = open.top();
 			open.pop();
+			assert(current.index >= 0 && current.index < tileCount);
 
 			// 이미 처리한 타일이면 무시
 			if (closed[current.index])

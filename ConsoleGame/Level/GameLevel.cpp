@@ -18,7 +18,7 @@ void GameLevel::OnInitialized()
 		Craft::Engine::Get().Quit();
 	}
 
-	map->SetPathDebugEnabled(true);
+	//map->SetPathDebugEnabled(true);
 
 	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 30.f));
 	player->SetTileMap(map);

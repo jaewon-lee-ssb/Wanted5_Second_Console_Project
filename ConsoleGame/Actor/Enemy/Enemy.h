@@ -17,6 +17,7 @@ class Enemy : public Craft::Actor
 		Chase,
 		Attack,
 		Flee,
+		Return,
 		Dead,
 		Count
 	};
@@ -26,8 +27,6 @@ public:
 	Enemy(const Craft::Vector2F& position);
 	~Enemy() = default;
 
-	bool SetTarget(const std::shared_ptr<Actor>& target);
-
 	void SetTileMap(const std::shared_ptr<Craft::TileMap>& newMap) { tileMap = newMap; }
 
 	void SetMoveSpeedX(float moveSpeed) { enemyMoveSpeedX = moveSpeed; }
@@ -36,6 +35,9 @@ public:
 	// Getter/Setter
 	inline float GetHp() const { return Hp; }
 	inline bool IsDead() const { return isDead; }
+
+protected:
+	virtual void BeginPlay() override;
 
 
 
