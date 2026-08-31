@@ -2,6 +2,7 @@
 
 #include <Actor/Player/Player.h>
 #include <Actor/Enemy/NonHostile/MiniFish.h>
+#include <Actor/Enemy/EnemySpawner.h>
 
 #include <Engine/Engine.h>
 #include <Camera/Camera.h>
@@ -32,6 +33,9 @@ void GameLevel::OnInitialized()
 
 	auto fish = SpawnActor<MiniFish>(Craft::Vector2F(100.f, 60.f));
 	fish->SetTileMap(map);
+
+	auto enemySpawner = SpawnActor<EnemySpawner>();
+	enemySpawner->SetTileMap(map);
 
 }
 
