@@ -29,8 +29,7 @@ public:
 
 	void SetTileMap(const std::shared_ptr<Craft::TileMap>& newMap) { tileMap = newMap; }
 
-	void SetMoveSpeedX(float moveSpeed) { enemyMoveSpeedX = moveSpeed; }
-	void SetMoveSpeedY(float moveSpeed) { enemyMoveSpeedY = moveSpeed; }
+	void SetMoveSpeed(float moveSpeed) { enemyMoveSpeed = moveSpeed; }
 
 	// Getter/Setter
 	inline float GetHp() const { return Hp; }
@@ -39,12 +38,13 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void ChangeEnemyState(const EnemyState& state) { enemyState = state; }
+
 
 
 protected:
 	// 이동속도
-	float enemyMoveSpeedX = 0.f;
-	float enemyMoveSpeedY = 0.f;
+	float enemyMoveSpeed = 0.f;
 	
 	// 체력
 	float Hp = 100.f;

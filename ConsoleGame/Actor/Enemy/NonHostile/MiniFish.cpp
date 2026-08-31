@@ -16,8 +16,7 @@ MiniFish::MiniFish(const Craft::Vector2F& position)
 
 
 	// 속도 지정
-	enemyMoveSpeedX = 30.f;
-	enemyMoveSpeedY = 15.f;
+	enemyMoveSpeed = 30.f;
 
 	patrolOrigin = position;
 	 
@@ -36,7 +35,14 @@ void MiniFish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 	
-	
+	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
+	if ((enemyState == EnemyState::Patrol || enemyState == EnemyState::Return) && DetectPlayer())
+	{
+		ChangeEnemyState(EnemyState::Flee);
+
+		ResetPath();
+	}
+
 	switch (enemyState)
 	{
 	case EnemyState::Patrol:
@@ -72,26 +78,25 @@ void MiniFish::Tick(float deltaTime)
 	}
 }
 
-void MiniFish::DetectPlayer()
+bool MiniFish::DetectPlayer() const
 {
 	if (auto player = target.lock())
 	{
-		const Craft::Vector2F diff = player->GetPosition() - GetPosition();
+		const Craft::Vector2F difference = player->GetPosition() - GetPosition();
 
-		constexpr float verticalScale = 2.f;
+		const float diffX = difference.x;
+		const float diffY = difference.y * 2.f;
 
-		const float adjustedX = diff.x;
-		const float adjustedY = diff.y * verticalScale;
-
-		const float adjustedDistanceSquared = adjustedX * adjustedX + adjustedY * adjustedY;
+		const float adjustedDistanceSquared = diffX * diffX + diffY * diffY;
 
 		const float detectDistanceSquared = detectRadius * detectRadius;
 
 		if (adjustedDistanceSquared <= detectDistanceSquared)
 		{
-			enemyState = EnemyState::Flee;
+			return true;
 		}
 	}
+	return false;
 }
 
 void MiniFish::FollowPath(float deltaTime)
@@ -106,8 +111,7 @@ void MiniFish::FollowPath(float deltaTime)
 	// 목표 지점에 도착하면 초기화
 	if (currentPathIndex >= patrolPath.size())
 	{
-		patrolPath.clear();
-		currentPathIndex = 0;
+		ResetPath();
 		return;
 	}
 
@@ -129,7 +133,7 @@ void MiniFish::FollowPath(float deltaTime)
 
 	const Craft::Vector2F direction = difference.Normalize();
 
-	const Craft::Vector2F movement(direction.x * enemyMoveSpeedX * deltaTime, direction.y * enemyMoveSpeedY * deltaTime);
+	const Craft::Vector2F movement(direction.x * enemyMoveSpeed * 2 * deltaTime, direction.y * enemyMoveSpeed * deltaTime);
 
 	if (distance <= 0.5f || movement.Length() >= distance)
 	{
@@ -150,15 +154,14 @@ void MiniFish::FollowPath(float deltaTime)
 	}
 	else
 	{
-		patrolPath.clear();
-		currentPathIndex = 0;
+		ResetPath();
 	}
 }
 
 void MiniFish::FindRandomPatrolPoint()
 {
-	const float randomTargetX = Utility::RandomRange(-patrolRadiusX, patrolRadiusX);
-	const float randomTargetY = Utility::RandomRange(-patrolRadiusY, patrolRadiusY);
+	const float randomTargetX = Utility::RandomRange(-patrolRadius * 2, patrolRadius * 2);
+	const float randomTargetY = Utility::RandomRange(-patrolRadius, patrolRadius);
 
 	if (auto map = tileMap.lock())
 	{
@@ -166,11 +169,56 @@ void MiniFish::FindRandomPatrolPoint()
 	}
 }
 
+void MiniFish::FindReturnPath()
+{
+	if (auto map = tileMap.lock())
+	{
+		patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+	}
+}
+
+void MiniFish::MoveWithTileCollision(const Craft::Vector2F& movement)
+{
+	auto map = tileMap.lock();
+
+	if (!map)
+	{
+		return;
+	}
+
+	Craft::Vector2F newPosition = GetPosition();
+
+	// X축 이동
+	newPosition.x += movement.x;
+
+	if (!map->OverlapsSolid(
+		GetBoundsAt(newPosition)))
+	{
+		SetPosition(newPosition);
+	}
+	else
+	{
+		newPosition.x = GetPosition().x;
+	}
+
+	// Y축 이동
+	newPosition.y += movement.y;
+
+	if (!map->OverlapsSolid(
+		GetBoundsAt(newPosition)))
+	{
+		SetPosition(newPosition);
+	}
+}
+
+void MiniFish::ResetPath()
+{
+	patrolPath.clear();
+	currentPathIndex = 0;
+}
+
 void MiniFish::UpdatePatrol(float deltaTime)
 {
-
-
-
 	if (patrolPath.empty())
 	{
 		patrolWaitTime -= deltaTime;
@@ -178,6 +226,7 @@ void MiniFish::UpdatePatrol(float deltaTime)
 		if (patrolWaitTime <= 0.f)
 		{
 			FindRandomPatrolPoint();
+			patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
 			patrolWaitTime = patrolRetryInterval;
 		}
 	}
@@ -189,10 +238,76 @@ void MiniFish::UpdatePatrol(float deltaTime)
 
 void MiniFish::UpdateFlee(float deltaTime)
 {
+	auto player = target.lock();
+	auto map = tileMap.lock();
 
+	if (!player || !map)
+	{
+		return;
+	}
+
+	const Craft::Vector2F difference = GetPosition() - player->GetPosition();
+
+	// 플레이어와 적의 거리
+	const float distance = difference.Length();
+
+	if (distance >= fleeEndDistance)
+	{
+		ChangeEnemyState(EnemyState::Return);
+
+		ResetPath();
+
+		return;
+	}
+
+	if (distance <= 0.f)
+	{
+		return;
+	}
+
+	const Craft::Vector2F direction = difference.Normalize();
+
+	const Craft::Vector2F movement{ direction.x * enemyMoveSpeed * 2 * deltaTime, direction.y * enemyMoveSpeed * deltaTime };
+
+	MoveWithTileCollision(movement);
 }
 
 void MiniFish::UpdateReturn(float deltaTime)
 {
+	if (patrolPath.empty())
+	{
+		patrolWaitTime -= deltaTime;
 
+		if (patrolWaitTime <= 0.f)
+		{
+			if (auto map = tileMap.lock())
+			{
+				patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+			}
+			patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
+			patrolWaitTime = patrolRetryInterval;
+		}
+	}
+	else
+	{
+		FollowPath(deltaTime);
+	}
+	
+
+	// 어느정도 거리안에 들어왔으면 다시 패트롤 시작
+
+	const Craft::Vector2F difference = GetPosition() - patrolOrigin;
+	const float diffX = difference.x;
+	const float diffY = difference.y * 2.f;
+
+	if (diffX * diffX + diffY * diffY <= patrolRadius * patrolRadius)
+	{
+		enemyState = EnemyState::Patrol;
+
+		ResetPath();
+
+		return;
+	}
+
+	
 }

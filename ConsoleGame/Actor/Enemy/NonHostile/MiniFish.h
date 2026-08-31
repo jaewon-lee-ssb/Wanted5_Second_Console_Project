@@ -17,13 +17,21 @@ private:
 
 
 	// 플레이어 감지
-	void DetectPlayer();
+	bool DetectPlayer() const;
 
 	// 패트롤 
 	void FollowPath(float deltaTime);
 	void FindRandomPatrolPoint();
 
-	// 
+	// 다시 돌아오는 길
+	void FindReturnPath();
+
+
+	// 도망
+	void MoveWithTileCollision(const Craft::Vector2F& movement);
+
+	// 초기화
+	void ResetPath();
 
 	// 행동 업데이트
 	void UpdatePatrol(float deltaTime);
@@ -31,20 +39,24 @@ private:
 	void UpdateReturn(float deltaTime);
 
 private:
-	// 적의 현재 상태
+	// 이 거리가 넘으면 도망 종료
+	float fleeEndDistance = 70.f;
 
 	// 패트롤 위치
 	Craft::Vector2F patrolOrigin;
 	Craft::Vector2F patrolTarget;
 
 	// 패트롤 범위
-	float patrolRadiusX = 100.f;
-	float patrolRadiusY = 30.f;
+	float patrolRadius = 30.f;
 	float patrolWaitTime = 0.f;
+
+	// 다시 패트롤하는 쿨타임 랜덤설정할거임
 	float patrolRetryInterval = 0.5f;
 
+	bool isFindTarget = false;
+
 	// 감지 범위
-	float detectRadius = 25.f;
+	float detectRadius = 50.f;
 
 	// A* 관련 변수
 	std::vector<Craft::Vector2I> patrolPath;
