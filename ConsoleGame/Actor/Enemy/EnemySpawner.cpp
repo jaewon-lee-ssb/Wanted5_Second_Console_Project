@@ -3,36 +3,68 @@
 #include <Actor/Enemy/NonHostile/MiniFish.h>
 
 #include <World/TileMap.h>
+#include <Level/Level.h>
 #include <Utility/Random.h>
 
 EnemySpawner::EnemySpawner()
-	: super({}, Craft::Vector2F(300.f, 200.f))
+	: super({})
 {
+	
+}
 
+void EnemySpawner::BeginPlay()
+{
+	if (auto map = tileMap.lock())
+	{
+		Craft::Vector2F mapSize = map->GetMapSize();
+		mapWidth = mapSize.x;
+		mapHeight = mapSize.y;
+	}
 }
 
 void EnemySpawner::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
+	spawnTimer -= deltaTime;
 
-	if (curEnemyCount < maxEnemyCount)
+	if (spawnTimer <= 0.f)
 	{
-		SpawnEnemy();
+		if (curEnemyCount < maxEnemyCount)
+		{
+			SpawnEnemy();
+			spawnTimer = spawnInterval;
+		}
 	}
 }
 
 void EnemySpawner::SpawnEnemy()
 {
-	const Craft::Vector2F spawnPoint = Craft::Vector2F(GetPosition().x + Utility::RandomRange(-spawnRadius * 2, spawnRadius * 2), 
-														GetPosition().y + Utility::RandomRange(-spawnRadius, spawnRadius));
-	
 	auto map = tileMap.lock();
 	if (!map)
 	{
 		return;
 	}
 
-	map->OverlapsSolid()
+	constexpr int maxAttempts = 10;
+
+	for (int attempt = 0; attempt < maxAttempts; ++attempt)
+	{
+		const Craft::Vector2F spawnPoint(Utility::RandomRange(0.f, mapWidth), Utility::RandomRange(0.f, mapHeight));
+
+		const Craft::Bounds spawnBounds = MiniFish::GetSpawnBounds(spawnPoint);
+
+		if (map->OverlapsSolid(spawnBounds))
+		{
+			// 생성위치에 몬스터가 들어갈수 없다면
+			continue;
+		}
+
+		auto enemy = GetOwner()->SpawnActor<MiniFish>(spawnPoint);
+		enemy->SetTileMap(map);
+
+		++curEnemyCount;
+		return;
+	}
 
 }

@@ -6,10 +6,14 @@ class MiniFish : public Enemy
 {
 	TYPE_DECLARATIONS(MiniFish, Enemy)
 
+	inline static constexpr float CollisionWidth = 16.f;
+	inline static constexpr float CollisionHeight = 8.f;
+
 public:
 	MiniFish(const Craft::Vector2F& position);
 	~MiniFish() = default;
 
+	static Craft::Bounds GetSpawnBounds(const Craft::Vector2F& position);
 
 private:
 	virtual void BeginPlay() override;
@@ -23,9 +27,8 @@ private:
 	void FollowPath(float deltaTime);
 	void FindRandomPatrolPoint();
 
-	// 다시 돌아오는 길
+	// 다시 돌아오는 길찾기
 	void FindReturnPath();
-
 
 	// 도망
 	void MoveWithTileCollision(const Craft::Vector2F& movement);

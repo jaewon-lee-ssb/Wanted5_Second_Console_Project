@@ -24,6 +24,14 @@ MiniFish::MiniFish(const Craft::Vector2F& position)
 	patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
 }
 
+Craft::Bounds MiniFish::GetSpawnBounds(const Craft::Vector2F& position)
+{
+	const float halfWidth = CollisionWidth * 0.5f;
+	const float halfHeight = CollisionHeight * 0.5f;
+
+	return Craft::Bounds(position.x - halfWidth, position.x + halfWidth, position.y - halfHeight, position.y + halfHeight);
+}
+
 void MiniFish::BeginPlay()
 {
 	super::BeginPlay();

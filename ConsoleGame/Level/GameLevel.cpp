@@ -31,9 +31,6 @@ void GameLevel::OnInitialized()
 		GetCamera()->SetMapSize(Craft::Vector2F(map->GetWidth(), map->GetHeight()));
 	}
 
-	auto fish = SpawnActor<MiniFish>(Craft::Vector2F(100.f, 60.f));
-	fish->SetTileMap(map);
-
 	auto enemySpawner = SpawnActor<EnemySpawner>();
 	enemySpawner->SetTileMap(map);
 

@@ -53,6 +53,9 @@ namespace Craft
 		Vector2F TileToWorld(int x, int y) const;
 		void WorldToTile(const Vector2F& position, int& x, int& y) const;
 
+		// 맵크기 반환함수
+		const Craft::Vector2F GetMapSize() const { return Craft::Vector2F(static_cast<float>(image.width), static_cast<float>(image.height)); }
+
 		// 타일의 크기 게터
 		const Vector2I GetTileSize() const { return Vector2I(tileWidth, tileHeight); }
 
@@ -88,8 +91,8 @@ namespace Craft
 
 	private:
 		// 맵의 가로 세로길이
-		int mapWidth = 0;
-		int mapHeight = 0;
+		int tilemapWidth = 0;
+		int tilemapHeight = 0;
 
 		// 타일 하나의 가로 세로 길이
 		int tileWidth = 8;

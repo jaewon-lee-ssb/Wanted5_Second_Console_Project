@@ -18,19 +18,24 @@ public:
 	void SetTileMap(std::shared_ptr<Craft::TileMap>& map) { tileMap = map; }
 
 private:
+	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 
 	void SpawnEnemy();
 
 private:
+	// 스폰 쿨타임
 	float spawnInterval = 5.f;
 	float spawnTimer = 0.f;
 
-	float spawnRadius = 100.f;
+	float mapWidth = 0.f;
+	float mapHeight = 0.f;
 
+	// 적 수 관리
 	int maxEnemyCount = 10;
 	int curEnemyCount = 0;
 
+	// 맵 약참조
 	std::weak_ptr<Craft::TileMap> tileMap;
 };
 

@@ -94,13 +94,15 @@ namespace Craft
 			return false;
 		}
 
-
-		mapWidth = loadedWidth;
-		mapHeight = loadedHeight;
+		// 여기까지 왔다면 제대로 파일을 읽었다는 것
+		tilemapWidth = loadedWidth;
+		tilemapHeight = loadedHeight;
 		tiles = std::move(loadedTiles);
 
-		mapImage.width = mapWidth * tileWidth;
-		mapImage.height = mapHeight * tileHeight;
+
+		// 실제 맵 크기는 타일맵길이에 1타일의 길이도 곱해준다
+		mapImage.width = tilemapWidth * tileWidth;
+		mapImage.height = tilemapHeight * tileHeight;
 		mapImage.pixels.assign(static_cast<size_t>(mapImage.width) * static_cast<size_t>(mapImage.height), Pixel{});
 
 		BuildVisualImage();
@@ -115,12 +117,12 @@ namespace Craft
 
 	TileType TileMap::GetTile(int x, int y) const
 	{
-		if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight)
+		if (x < 0 || x >= tilemapWidth || y < 0 || y >= tilemapHeight)
 		{
 			return TileType::Wall;
 		}
 
-		return tiles[y * mapWidth + x];
+		return tiles[y * tilemapWidth + x];
 	}
 
 	bool TileMap::IsSolid(int x, int y) const
@@ -153,9 +155,9 @@ namespace Craft
 
 		// Bounds가 걸치는 타일 좌표 범위 계산
 		const int leftTile = static_cast<int>(std::floor(localLeft / tileWidth));
-		const int rightTile = static_cast<int>(std::floor(localRight / tileWidth));
+		const int rightTile = static_cast<int>(std::ceil(localRight / tileWidth)) - 1;
 		const int topTile = static_cast<int>(std::floor(localTop / tileHeight));
-		const int bottomTile = static_cast<int>(std::floor(localBottom / tileHeight));
+		const int bottomTile = static_cast<int>(std::ceil(localBottom / tileHeight)) - 1;
 
 		// 해당 범위에 벽이 하나라도 있으면 충돌
 		for (int tileY = topTile; tileY <= bottomTile; ++tileY)
@@ -164,16 +166,19 @@ namespace Craft
 			{
 				if (IsSolid(tileX, tileY))
 				{
+					// 벽이 있다
 					return true;
 				}
 			}
 		}
 
+		// 벽이 없다
 		return false;
 	}
 
 	std::vector<Vector2I> TileMap::FindPath(const Vector2F& startWorldPosition, const Vector2F& endWorldPosition, float actorWidth, float actorHeight) const
 	{
+		// 현재 AStar 알고리즘 바꿀필요가 있다
 		std::vector<Vector2I> resultPath;
 
 		int startX = 0;
@@ -184,10 +189,10 @@ namespace Craft
 		WorldToTile(startWorldPosition, startX, startY);
 		WorldToTile(endWorldPosition, endX, endY);
 
-		if (startX < 0 || startX >= mapWidth ||
-			startY < 0 || startY >= mapHeight ||
-			endX < 0 || endX >= mapWidth ||
-			endY < 0 || endY >= mapHeight)
+		if (startX < 0 || startX >= tilemapWidth ||
+			startY < 0 || startY >= tilemapHeight ||
+			endX < 0 || endX >= tilemapWidth ||
+			endY < 0 || endY >= tilemapHeight)
 		{
 			return {};
 		}
@@ -205,10 +210,10 @@ namespace Craft
 			return resultPath;
 		}
 
-		const int startIndex = startY * mapWidth + startX;
-		const int endIndex = endY * mapWidth + endX;
+		const int startIndex = startY * tilemapWidth + startX;
+		const int endIndex = endY * tilemapWidth + endX;
 
-		const int tileCount = mapWidth * mapHeight;
+		const int tileCount = tilemapWidth * tilemapHeight;
 		constexpr int infiniteCost = (std::numeric_limits<int>::max)();
 
 		std::vector<int> gCosts(tileCount, infiniteCost);
@@ -255,8 +260,8 @@ namespace Craft
 
 				while (pathIndex != -1)
 				{
-					const int pathX = pathIndex % mapWidth;
-					const int pathY = pathIndex / mapWidth;
+					const int pathX = pathIndex % tilemapWidth;
+					const int pathY = pathIndex / tilemapWidth;
 
 					resultPath.emplace_back(pathX, pathY);
 					pathIndex = parents[pathIndex];
@@ -274,8 +279,8 @@ namespace Craft
 				return resultPath;
 			}
 
-			const int currentX = current.index % mapWidth;
-			const int currentY = current.index / mapWidth;
+			const int currentX = current.index % tilemapWidth;
+			const int currentY = current.index / tilemapWidth;
 
 			for (const Vector2I& direction : directions)
 			{
@@ -283,7 +288,7 @@ namespace Craft
 				const int nextY = currentY + direction.y;
 
 				// 인덱스로 바꾸기 전에 맵 범위 검사
-				if (nextX < 0 || nextX >= mapWidth || nextY < 0 || nextY >= mapHeight)
+				if (nextX < 0 || nextX >= tilemapWidth || nextY < 0 || nextY >= tilemapHeight)
 				{
 					continue;
 				}
@@ -298,7 +303,7 @@ namespace Craft
 					continue;
 				}
 
-				const int nextIndex = nextY * mapWidth + nextX;
+				const int nextIndex = nextY * tilemapWidth + nextX;
 
 				if (closed[nextIndex])
 				{
@@ -392,8 +397,8 @@ namespace Craft
 		DrawSubmergedRock();
 		
 
+		// 이미지를 만든 이미지로 교체해준다
 		ChangeImage(mapImage);
-
 		pivot = Vector2F::Zero;
 	}
 
@@ -438,9 +443,10 @@ namespace Craft
 
 	void TileMap::DrawSubmergedRock()
 	{
-		for (int tileY = 0; tileY < mapHeight; ++tileY)
+		// 타일
+		for (int tileY = 0; tileY < tilemapHeight; ++tileY)
 		{
-			for (int tileX = 0; tileX < mapWidth; ++tileX)
+			for (int tileX = 0; tileX < tilemapWidth; ++tileX)
 			{
 				if (!IsSolid(tileX, tileY))
 				{
