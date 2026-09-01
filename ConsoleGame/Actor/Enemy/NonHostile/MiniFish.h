@@ -19,6 +19,10 @@ private:
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 
+	virtual void UpdatePatrol(float deltaTime) override;
+	virtual void UpdateFlee(float deltaTime) override;
+	virtual void UpdateReturn(float deltaTime) override;
+
 
 	// 플레이어 감지
 	bool DetectPlayer() const;
@@ -37,9 +41,7 @@ private:
 	void ResetPath();
 
 	// 행동 업데이트
-	void UpdatePatrol(float deltaTime);
-	void UpdateFlee(float deltaTime);
-	void UpdateReturn(float deltaTime);
+	
 
 private:
 	// 이 거리가 넘으면 도망 종료

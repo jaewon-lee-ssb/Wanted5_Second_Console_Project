@@ -51,19 +51,6 @@ void MiniFish::Tick(float deltaTime)
 		ResetPath();
 	}
 
-	switch (enemyState)
-	{
-	case EnemyState::Patrol:
-		UpdatePatrol(deltaTime);
-		break;
-	case EnemyState::Flee:
-		UpdateFlee(deltaTime);
-		break;
-	case EnemyState::Return:
-		UpdateReturn(deltaTime);
-		break;
-	}
-
 	
 	// 디버그 경로 출력
 	if (auto map = tileMap.lock())
@@ -71,19 +58,7 @@ void MiniFish::Tick(float deltaTime)
 		map->QueueDebugPath(patrolPath, currentPathIndex);
 	}
 
-	// 애니메이션 시간 추가
-	animationElapsedTime += deltaTime;
-
-
-	// 애니메이션 프레임 교체
-	if (!enemySpriteAnimation[currentStateIndex].empty() && animationElapsedTime >= animationFrameTime)
-	{
-		animationElapsedTime -= animationFrameTime;
-
-		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % enemySpriteAnimation[currentStateIndex].size();
-
-		ChangeImage(enemySpriteAnimation[currentStateIndex][currentAnimationSpriteIndex]);
-	}
+	
 }
 
 bool MiniFish::DetectPlayer() const
@@ -227,6 +202,8 @@ void MiniFish::ResetPath()
 
 void MiniFish::UpdatePatrol(float deltaTime)
 {
+	super::UpdatePatrol(deltaTime);
+
 	if (patrolPath.empty())
 	{
 		patrolWaitTime -= deltaTime;
@@ -246,6 +223,8 @@ void MiniFish::UpdatePatrol(float deltaTime)
 
 void MiniFish::UpdateFlee(float deltaTime)
 {
+	super::UpdateFlee(deltaTime);
+
 	auto player = target.lock();
 	auto map = tileMap.lock();
 
@@ -256,10 +235,10 @@ void MiniFish::UpdateFlee(float deltaTime)
 
 	const Craft::Vector2F difference = GetPosition() - player->GetPosition();
 
-	// 플레이어와 적의 거리
-	const float distance = difference.Length();
+	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
+	const float fleeDistanceSquared = fleeEndDistance * fleeEndDistance;
 
-	if (distance >= fleeEndDistance)
+	if (adjustedDistanceSquared >= fleeDistanceSquared)
 	{
 		ChangeEnemyState(EnemyState::Return);
 
@@ -268,7 +247,7 @@ void MiniFish::UpdateFlee(float deltaTime)
 		return;
 	}
 
-	if (distance <= 0.f)
+	if (adjustedDistanceSquared <= 0.f)
 	{
 		return;
 	}
@@ -282,6 +261,8 @@ void MiniFish::UpdateFlee(float deltaTime)
 
 void MiniFish::UpdateReturn(float deltaTime)
 {
+	super::UpdateReturn(deltaTime);
+
 	if (patrolPath.empty())
 	{
 		patrolWaitTime -= deltaTime;
@@ -305,11 +286,14 @@ void MiniFish::UpdateReturn(float deltaTime)
 	// 어느정도 거리안에 들어왔으면 다시 패트롤 시작
 
 	const Craft::Vector2F difference = GetPosition() - patrolOrigin;
-	const float diffX = difference.x;
-	const float diffY = difference.y * 2.f;
 
-	if (diffX * diffX + diffY * diffY <= patrolRadius * patrolRadius)
+	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
+	const float patrolRadiusSquared = patrolRadius * patrolRadius;
+
+	// 패트롤 범위 내에 들어오면 다시 패트롤 시작
+	if (adjustedDistanceSquared <= patrolRadiusSquared)
 	{
+		ChangeEnemyState(EnemyState::Patrol);
 		enemyState = EnemyState::Patrol;
 
 		ResetPath();

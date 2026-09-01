@@ -37,6 +37,18 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float deltaTime) override;
+
+	void UpdateState(float deltaTime);
+
+	virtual void UpdatePatrol(float deltaTime);
+	virtual void UpdateChase(float deltaTime);
+	virtual void UpdateAttack(float deltaTime);
+	virtual void UpdateFlee(float deltaTime);
+	virtual void UpdateReturn(float deltaTime);
+	virtual void UpdateDead(float deltaTime);
+
+	void UpdateAnimation(float deltaTime);
 
 	void ChangeEnemyState(const EnemyState& state) { enemyState = state; }
 

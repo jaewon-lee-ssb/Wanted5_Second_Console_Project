@@ -109,6 +109,7 @@
   <ItemGroup>
     <ClCompile Include="Actor\Enemy\Enemy.cpp" />
     <ClCompile Include="Actor\Enemy\EnemySpawner.cpp" />
+    <ClCompile Include="Actor\Enemy\Hostile\Pufferfish.cpp" />
     <ClCompile Include="Actor\Enemy\NonHostile\MiniFish.cpp" />
     <ClCompile Include="Actor\Player\Harpoon.cpp" />
     <ClCompile Include="Actor\Player\Player.cpp" />
@@ -118,6 +119,7 @@
   <ItemGroup>
     <ClInclude Include="Actor\Enemy\Enemy.h" />
     <ClInclude Include="Actor\Enemy\EnemySpawner.h" />
+    <ClInclude Include="Actor\Enemy\Hostile\Pufferfish.h" />
     <ClInclude Include="Actor\Enemy\NonHostile\MiniFish.h" />
     <ClInclude Include="Actor\Player\Harpoon.h" />
     <ClInclude Include="Actor\Player\Player.h" />
