@@ -11,7 +11,7 @@ Enemy::Enemy(const Craft::Vector2F& position)
 
 void Enemy::BeginPlay()
 {
-	target = GetOwner()->FindActor<Player>();
+	targetPtr = GetOwner()->FindActor<Player>();
 }
 
 void Enemy::Tick(float deltaTime)
@@ -25,7 +25,7 @@ void Enemy::Tick(float deltaTime)
 
 void Enemy::UpdateState(float deltaTime)
 {
-	switch (enemyState)
+	/*switch (enemyState)
 	{
 	case EnemyState::Patrol:
 		UpdatePatrol(deltaTime);
@@ -45,32 +45,32 @@ void Enemy::UpdateState(float deltaTime)
 	case EnemyState::Dead:
 		UpdateDead(deltaTime);
 		break;
-	}
+	}*/
 }
 
-void Enemy::UpdatePatrol(float deltaTime)
-{
-}
-
-void Enemy::UpdateChase(float deltaTime)
-{
-}
-
-void Enemy::UpdateAttack(float deltaTime)
-{
-}
-
-void Enemy::UpdateFlee(float deltaTime)
-{
-}
-
-void Enemy::UpdateReturn(float deltaTime)
-{
-}
-
-void Enemy::UpdateDead(float deltaTime)
-{
-}
+//void Enemy::UpdatePatrol(float deltaTime)
+//{
+//}
+//
+//void Enemy::UpdateChase(float deltaTime)
+//{
+//}
+//
+//void Enemy::UpdateAttack(float deltaTime)
+//{
+//}
+//
+//void Enemy::UpdateFlee(float deltaTime)
+//{
+//}
+//
+//void Enemy::UpdateReturn(float deltaTime)
+//{
+//}
+//
+//void Enemy::UpdateDead(float deltaTime)
+//{
+//}
 
 void Enemy::UpdateAnimation(float deltaTime)
 {

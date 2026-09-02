@@ -1,12 +1,14 @@
 ﻿#pragma once
 
+#include <Core/Core.h>
+
 #include <random>
 
 namespace Utility
 {
 	// 랜덤 성능 지표: 무작위 수를 얼마나 잘 생성해주는가/속도.
 
-	inline std::mt19937& GetRandomEngine()
+	inline CRAFT_API std::mt19937& GetRandomEngine()
 	{
 		// 프로그램 실행 중에 1번만 생성.
 		static std::mt19937 engine;
@@ -16,7 +18,7 @@ namespace Utility
 	}
 	
 	// 랜덤 시드(종잣 값) 설정 함수.
-	inline void SetRandomSeed()
+	inline CRAFT_API void SetRandomSeed()
 	{
 		// 하드웨어 기반 난수 생성기 (시드값 제공용).
 		std::random_device randomDevice;

@@ -2,6 +2,8 @@
 
 #include <Actor/Actor.h>
 
+#include <Actor/Enemy/EnemyTypes.h>
+
 namespace Craft
 {
 	class TileMap;
@@ -10,18 +12,6 @@ namespace Craft
 class Enemy : public Craft::Actor
 {
 	TYPE_DECLARATIONS(Enemy, Actor)
-
-	enum class EnemyState
-	{
-		Patrol,
-		Chase,
-		Attack,
-		Flee,
-		Return,
-		Dead,
-		Count
-	};
-
 
 public:
 	Enemy(const Craft::Vector2F& position);
@@ -40,15 +30,15 @@ protected:
 	virtual void Tick(float deltaTime) override;
 
 	// 현재 상태따라 업데이트 상태 불러줌
-	void UpdateState(float deltaTime);
+	virtual void UpdateState(float deltaTime);
 
 	// 각종 상태 업데이트
-	virtual void UpdatePatrol(float deltaTime);
+	/*virtual void UpdatePatrol(float deltaTime);
 	virtual void UpdateChase(float deltaTime);
 	virtual void UpdateAttack(float deltaTime);
 	virtual void UpdateFlee(float deltaTime);
 	virtual void UpdateReturn(float deltaTime);
-	virtual void UpdateDead(float deltaTime);
+	virtual void UpdateDead(float deltaTime);*/
 
 	// 애니메이션 업데이트 함수
 	void UpdateAnimation(float deltaTime);

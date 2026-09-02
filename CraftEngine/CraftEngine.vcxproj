@@ -113,6 +113,7 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i </Command>
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Level\Level.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
+    <ClCompile Include="Navigation\AStar.cpp" />
     <ClCompile Include="Physics\CollisionSystem.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
     <ClCompile Include="Render\ScreenBuffer.cpp" />
@@ -130,6 +131,8 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i </Command>
     <ClInclude Include="Level\Level.h" />
     <ClInclude Include="Math\Color.h" />
     <ClInclude Include="Math\Vector2.h" />
+    <ClInclude Include="Navigation\AStar.h" />
+    <ClInclude Include="Navigation\Node.h" />
     <ClInclude Include="Physics\Bounds.h" />
     <ClInclude Include="Physics\CollisionLayer.h" />
     <ClInclude Include="Physics\CollisionSystem.h" />

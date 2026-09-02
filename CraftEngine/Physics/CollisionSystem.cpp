@@ -72,18 +72,18 @@ namespace Craft
 		const Vector2F rightPrevious = right->GetPreviousPosition();
 
 		// 이전 프레임 위치와 현재 위치를 모두 포함하는 바운드(충돌 영역) 계산.
-		const float leftXMin = min(leftCurrent.x, leftPrevious.x);
-		const float leftXMax = max(leftCurrent.x + left->GetWidth(), leftPrevious.x + left->GetWidth());
+		const float leftXMin = std::min(leftCurrent.x, leftPrevious.x);
+		const float leftXMax = std::max(leftCurrent.x + left->GetWidth(), leftPrevious.x + left->GetWidth());
 
 		// 이전 프레임까지 고려한 y충돌 영역 계산.
-		const float leftYMin = min(leftCurrent.y, leftPrevious.y);
-		const float leftYMax = max(leftCurrent.y + 1, leftPrevious.y + 1);
+		const float leftYMin = std::min(leftCurrent.y, leftPrevious.y);
+		const float leftYMax = std::max(leftCurrent.y + 1, leftPrevious.y + 1);
 			  
-		const float rightXMin = min(rightCurrent.x, rightPrevious.x);
-		const float rightXMax = max(rightCurrent.x + right->GetWidth(), rightPrevious.x + right->GetWidth());
+		const float rightXMin = std::min(rightCurrent.x, rightPrevious.x);
+		const float rightXMax = std::max(rightCurrent.x + right->GetWidth(), rightPrevious.x + right->GetWidth());
 
-		const float rightYMin = min(rightCurrent.y, rightPrevious.y);
-		const float rightYMax = max(rightCurrent.y + 1, rightPrevious.y + 1);
+		const float rightYMin = std::min(rightCurrent.y, rightPrevious.y);
+		const float rightYMax = std::max(rightCurrent.y + 1, rightPrevious.y + 1);
 
 		// x좌표 기준 비교.
 		

@@ -63,7 +63,7 @@ namespace Craft
 		bool OverlapsSolid(const Bounds& worldBounds) const;
 
 		// 경로 찾는 함수.
-		std::vector<Vector2I> FindPath(const Vector2F& startWorldPosition, const Vector2F& endWorldPosition, float imageWidth, float imageHeight) const;
+		std::vector<Vector2I> FindPath(const Vector2F& startWorldPosition, const Vector2F& goalWorldPosition, float imageWidth, float imageHeight) const;
 
 		// A* 경로 디버그 표시
 		void SetPathDebugEnabled(bool enabled);
@@ -88,6 +88,9 @@ namespace Craft
 
 		// A* 경로 디버그용 타일 이미지 생성
 		void BuildPathDebugImage();
+
+		// 해당 타일에 액터가 들어갈 수 있는지 검사.
+		bool CanOccupyTile(int tileX, int tileY, float actorWidth, float actorHeight) const;
 
 	private:
 		// 맵의 가로 세로길이

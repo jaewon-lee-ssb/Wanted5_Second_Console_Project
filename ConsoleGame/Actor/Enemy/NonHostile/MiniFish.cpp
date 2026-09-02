@@ -61,6 +61,24 @@ void MiniFish::Tick(float deltaTime)
 	
 }
 
+void MiniFish::UpdateState(float deltaTime)
+{
+	super::UpdateState(deltaTime);
+
+	switch (enemyState)
+	{
+	case EnemyState::Patrol:
+		UpdatePatrol(deltaTime);
+		break;
+	case EnemyState::Flee:
+		UpdateFlee(deltaTime);
+		break;
+	case EnemyState::Return:
+		UpdateReturn(deltaTime);
+		break;
+	}
+}
+
 void MiniFish::FollowPath(float deltaTime)
 {
 	auto map = tileMap.lock();
@@ -181,7 +199,7 @@ void MiniFish::ResetPath()
 
 void MiniFish::UpdatePatrol(float deltaTime)
 {
-	super::UpdatePatrol(deltaTime);
+	
 
 	if (patrolPath.empty())
 	{
@@ -202,7 +220,7 @@ void MiniFish::UpdatePatrol(float deltaTime)
 
 void MiniFish::UpdateFlee(float deltaTime)
 {
-	super::UpdateFlee(deltaTime);
+	
 
 	auto player = targetPtr.lock();
 	auto map = tileMap.lock();
@@ -240,7 +258,7 @@ void MiniFish::UpdateFlee(float deltaTime)
 
 void MiniFish::UpdateReturn(float deltaTime)
 {
-	super::UpdateReturn(deltaTime);
+
 
 	if (patrolPath.empty())
 	{

@@ -38,33 +38,36 @@ void Pufferfish::Tick(float deltaTime)
 	
 }
 
+void Pufferfish::UpdateState(float deltaTime)
+{
+	super::UpdateState(deltaTime);
+}
+
 void Pufferfish::UpdatePatrol(float deltaTime)
 {
-	super::UpdatePatrol(deltaTime);
+	
 }
 
 void Pufferfish::UpdateChase(float deltaTime)
 {
-	super::UpdateChase(deltaTime);
+
 }
 
 void Pufferfish::UpdateAttack(float deltaTime)
 {
-	super::UpdateAttack(deltaTime);
 }
 
 void Pufferfish::UpdateFlee(float deltaTime)
 {
-	super::UpdateFlee(deltaTime);
 }
 
 void Pufferfish::UpdateReturn(float deltaTime)
 {
-	super::UpdateReturn(deltaTime);
+	
 }
 
 void Pufferfish::UpdateDead(float deltaTime)
 {
-	super::UpdateDead(deltaTime);
+
 }
 

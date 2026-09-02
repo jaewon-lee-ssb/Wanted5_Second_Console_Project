@@ -19,9 +19,11 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 
-	virtual void UpdatePatrol(float deltaTime) override;
-	virtual void UpdateFlee(float deltaTime) override;
-	virtual void UpdateReturn(float deltaTime) override;
+	virtual void UpdateState(float deltaTime) override; 
+
+	void UpdatePatrol(float deltaTime);
+	void UpdateFlee(float deltaTime);
+	void UpdateReturn(float deltaTime);
 
 private:
 

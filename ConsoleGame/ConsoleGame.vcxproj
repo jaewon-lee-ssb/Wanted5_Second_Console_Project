@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClInclude Include="Actor\Enemy\Enemy.h" />
     <ClInclude Include="Actor\Enemy\EnemySpawner.h" />
+    <ClInclude Include="Actor\Enemy\EnemyTypes.h" />
     <ClInclude Include="Actor\Enemy\Hostile\Pufferfish.h" />
     <ClInclude Include="Actor\Enemy\NonHostile\MiniFish.h" />
     <ClInclude Include="Actor\Player\Harpoon.h" />

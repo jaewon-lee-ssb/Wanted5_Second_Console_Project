@@ -2,6 +2,7 @@
 
 #include <Core/Core.h>
 
+#define NOMINMAX
 #include <Windows.h>
 
 namespace Craft

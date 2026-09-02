@@ -2,12 +2,12 @@
 #include <Camera/Camera.h>
 #include <Level/Level.h>
 #include <Render/Renderer.h>
+#include <Navigation/AStar.h>
+
 
 #include <fstream>
 #include <cassert>
 #include <algorithm>
-#include <limits>
-#include <queue>
 
 
 namespace Craft
@@ -176,161 +176,53 @@ namespace Craft
 		return false;
 	}
 
-	std::vector<Vector2I> TileMap::FindPath(const Vector2F& startWorldPosition, const Vector2F& endWorldPosition, float actorWidth, float actorHeight) const
+	std::vector<Vector2I> TileMap::FindPath(const Vector2F& startWorldPosition, const Vector2F& goalWorldPosition, float actorWidth, float actorHeight) const
 	{
-		// 현재 AStar 알고리즘 바꿀필요가 있다
-		std::vector<Vector2I> resultPath;
-
 		int startX = 0;
 		int startY = 0;
-		int endX = 0;
-		int endY = 0;
+		int goalX = 0;
+		int goalY = 0;
 
-		WorldToTile(startWorldPosition, startX, startY);
-		WorldToTile(endWorldPosition, endX, endY);
+		// 액터가 현재 위치한 곳 검사
+		const Bounds startBounds{
+			startWorldPosition.x - actorWidth * 0.5f,
+			startWorldPosition.x + actorWidth * 0.5f,
+			startWorldPosition.y - actorHeight * 0.5f,
+			startWorldPosition.y + actorHeight * 0.5f
+		};
 
-		if (startX < 0 || startX >= tilemapWidth ||
-			startY < 0 || startY >= tilemapHeight ||
-			endX < 0 || endX >= tilemapWidth ||
-			endY < 0 || endY >= tilemapHeight)
+		if (OverlapsSolid(startBounds))
 		{
 			return {};
 		}
 
-		// 시작점과 목적지에 액터가 들어갈수 있나 체크
-		Vector2F nodeEndPosition = TileToWorld(endX, endY) + Vector2F(tileWidth * 0.5f, tileHeight * 0.5f);
+		// 목표지점 검사
+		WorldToTile(startWorldPosition, startX, startY);
+		WorldToTile(goalWorldPosition, goalX, goalY);
 
-		Bounds startBounds(startWorldPosition.x - actorWidth * 0.5f, startWorldPosition.x + actorWidth * 0.5f,
-			startWorldPosition.y - actorHeight * 0.5f, startWorldPosition.y + actorHeight * 0.5f);
-		Bounds endBounds(nodeEndPosition.x - actorWidth * 0.5f, nodeEndPosition.x + actorWidth * 0.5f,
-			nodeEndPosition.y - actorHeight * 0.5f, nodeEndPosition.y + actorHeight * 0.5f);
-
-		if (OverlapsSolid(startBounds) || OverlapsSolid(endBounds))
+		if (!CanOccupyTile(goalX, goalY, actorWidth, actorHeight))
 		{
-			return resultPath;
+			return {};
 		}
 
-		const int startIndex = startY * tilemapWidth + startX;
-		const int endIndex = endY * tilemapWidth + endX;
-
-		const int tileCount = tilemapWidth * tilemapHeight;
-		constexpr int infiniteCost = (std::numeric_limits<int>::max)();
-
-		std::vector<int> gCosts(tileCount, infiniteCost);
-		std::vector<int> parents(tileCount, -1);
-		std::vector<bool> closed(tileCount, false);
-
-		std::priority_queue<OpenNode, std::vector<OpenNode>, CompareOpenNode> open;
-
-		auto CalculateH = [endX, endY](int x, int y)
+		// 예외처리 빠져나왔으면 
+		auto canMove = [this, actorWidth, actorHeight](int x, int y)
 			{
-				return std::abs(endX - x) + std::abs(endY - y);
+				return CanOccupyTile(x, y, actorWidth, actorHeight);
 			};
-		
-		gCosts[startIndex] = 0;
 
-		open.push({ startIndex, 0, CalculateH(startX, startY) });
+		// 경로 검사는 AStar한테 맡김
+		AStar pathFinder;
 
-		const Vector2I directions[] =
+		auto path = pathFinder.FindPath(Vector2I(startX, startY), Vector2I(goalX, goalY), tilemapWidth, tilemapHeight, canMove);
+
+		if (!path.empty())
 		{
-			Vector2I(1, 0),
-			Vector2I(-1, 0),
-			Vector2I(0, 1),
-			Vector2I(0, -1),
-		};
-
-		while (!open.empty())
-		{
-			const OpenNode current = open.top();
-			open.pop();
-			assert(current.index >= 0 && current.index < tileCount);
-
-			// 이미 처리한 타일이면 무시
-			if (closed[current.index])
-			{
-				continue;
-			}
-
-			closed[current.index] = true;
-
-			// 목표에 도착
-			if (current.index == endIndex)
-			{
-				int pathIndex = endIndex;
-
-				while (pathIndex != -1)
-				{
-					const int pathX = pathIndex % tilemapWidth;
-					const int pathY = pathIndex / tilemapWidth;
-
-					resultPath.emplace_back(pathX, pathY);
-					pathIndex = parents[pathIndex];
-				}
-
-				// 목표부터 시작점 순서로 들어 있으므로 뒤집기.
-				std::reverse(resultPath.begin(), resultPath.end());
-
-				// 첫 번째 좌표는 현재 위치이므로 제거.
-				if (!resultPath.empty())
-				{
-					resultPath.erase(resultPath.begin());
-				}
-
-				return resultPath;
-			}
-
-			const int currentX = current.index % tilemapWidth;
-			const int currentY = current.index / tilemapWidth;
-
-			for (const Vector2I& direction : directions)
-			{
-				const int nextX = currentX + direction.x;
-				const int nextY = currentY + direction.y;
-
-				// 인덱스로 바꾸기 전에 맵 범위 검사
-				if (nextX < 0 || nextX >= tilemapWidth || nextY < 0 || nextY >= tilemapHeight)
-				{
-					continue;
-				}
-
-				Vector2F nodePosition = TileToWorld(nextX, nextY) + Vector2F(tileWidth * 0.5f, tileHeight * 0.5f);
-
-				Bounds actorBounds(nodePosition.x - actorWidth * 0.5f, nodePosition.x + actorWidth * 0.5f,
-					nodePosition.y - actorHeight * 0.5f, nodePosition.y + actorHeight * 0.5f);
-
-				if (OverlapsSolid(actorBounds))
-				{
-					continue;
-				}
-
-				const int nextIndex = nextY * tilemapWidth + nextX;
-
-				if (closed[nextIndex])
-				{
-					continue;
-				}
-
-				// 상하좌우 한 칸의 이동 비용은 1
-				const int newGCost = gCosts[current.index] + 1;
-
-				// 기존에 발견한 길보다 길다면 무시
-				if (newGCost >= gCosts[nextIndex])
-				{
-					continue;
-				}
-
-				gCosts[nextIndex] = newGCost;
-				parents[nextIndex] = current.index;
-
-				const int hCost = CalculateH(nextX, nextY);
-
-				open.push({ nextIndex, newGCost, newGCost + hCost });
-			
-			}
+			path.erase(path.begin());
 		}
 
-		// Open이 비었는데 목표를 못 찾았다면 빈 경로 반환
-		return resultPath;
+
+		return path;
 	}
 
 	void TileMap::SetPathDebugEnabled(bool enabled)
@@ -526,6 +418,29 @@ namespace Craft
 			pixel.color = BackgroundColor::Red;
 			pixel.transparent = false;
 		}
+	}
+
+	bool TileMap::CanOccupyTile(int tileX, int tileY, float actorWidth, float actorHeight) const
+	{
+		// 맵 밖이면 못 들어감
+		if (tileX < 0 || tileX >= tilemapWidth || tileY < 0 || tileY >= tilemapHeight)
+		{
+			return false;
+		}
+
+		// 타일의 중앙 월드 좌표 계산
+		const Vector2F center = TileToWorld(tileX, tileY) + Vector2F(tileWidth * 0.5f, tileHeight * 0.5f);
+
+		// 액터를 그 위치에 놓았다고 가정한 바운더리
+		const Bounds bounds{
+			center.x - actorWidth * 0.5f,
+			center.x + actorWidth * 0.5f,
+			center.y - actorHeight * 0.5f,
+			center.y + actorHeight * 0.5f
+		};
+
+		// 벽과 겹치지 않으면 들어갈수 있음
+		return !OverlapsSolid(bounds);
 	}
 
 }
