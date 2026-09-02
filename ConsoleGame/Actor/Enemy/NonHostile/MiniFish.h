@@ -24,6 +24,7 @@ protected:
 	void UpdatePatrol(float deltaTime);
 	void UpdateFlee(float deltaTime);
 	void UpdateReturn(float deltaTime);
+	void UpdateDead(float deltaTime);
 
 private:
 

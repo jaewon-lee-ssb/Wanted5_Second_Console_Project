@@ -41,6 +41,28 @@ void Pufferfish::Tick(float deltaTime)
 void Pufferfish::UpdateState(float deltaTime)
 {
 	super::UpdateState(deltaTime);
+
+	switch (enemyState)
+	{
+	case EnemyState::Patrol:
+		UpdatePatrol(deltaTime);
+		break;
+	case EnemyState::Chase:
+		UpdateChase(deltaTime);
+		break;
+	case EnemyState::Attack:
+		UpdateAttack(deltaTime);
+		break;
+	case EnemyState::Flee:
+		UpdateFlee(deltaTime);
+		break;
+	case EnemyState::Return:
+		UpdateReturn(deltaTime);
+		break;
+	case EnemyState::Dead:
+		UpdateDead(deltaTime);
+		break;
+	}
 }
 
 void Pufferfish::UpdatePatrol(float deltaTime)

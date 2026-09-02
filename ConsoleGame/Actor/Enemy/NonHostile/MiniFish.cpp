@@ -76,6 +76,9 @@ void MiniFish::UpdateState(float deltaTime)
 	case EnemyState::Return:
 		UpdateReturn(deltaTime);
 		break;
+	case EnemyState::Dead:
+		UpdateDead(deltaTime);
+		break;
 	}
 }
 
@@ -222,15 +225,15 @@ void MiniFish::UpdateFlee(float deltaTime)
 {
 	
 
-	auto player = targetPtr.lock();
+	auto target = targetPtr.lock();
 	auto map = tileMap.lock();
 
-	if (!player || !map)
+	if (!target || !map)
 	{
 		return;
 	}
 
-	const Craft::Vector2F difference = GetPosition() - player->GetPosition();
+	const Craft::Vector2F difference = GetPosition() - target->GetPosition();
 
 	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
 	const float fleeDistanceSquared = fleeEndDistance * fleeEndDistance;
@@ -299,4 +302,8 @@ void MiniFish::UpdateReturn(float deltaTime)
 	}
 
 	
+}
+
+void MiniFish::UpdateDead(float deltaTime)
+{
 }
