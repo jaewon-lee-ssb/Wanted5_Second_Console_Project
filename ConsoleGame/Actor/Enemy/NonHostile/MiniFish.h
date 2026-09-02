@@ -15,7 +15,7 @@ public:
 
 	static Craft::Bounds GetSpawnBounds(const Craft::Vector2F& position);
 
-private:
+protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 
@@ -23,9 +23,7 @@ private:
 	virtual void UpdateFlee(float deltaTime) override;
 	virtual void UpdateReturn(float deltaTime) override;
 
-
-	// 플레이어 감지
-	bool DetectPlayer() const;
+private:
 
 	// 패트롤 
 	void FollowPath(float deltaTime);
@@ -40,8 +38,6 @@ private:
 	// 초기화
 	void ResetPath();
 
-	// 행동 업데이트
-	
 
 private:
 	// 이 거리가 넘으면 도망 종료
@@ -58,14 +54,6 @@ private:
 	// 다시 패트롤하는 쿨타임 랜덤설정할거임
 	float patrolRetryInterval = 0.5f;
 
-	bool isFindTarget = false;
-
-	// 감지 범위
-	float detectRadius = 50.f;
-
-	// A* 관련 변수
-	std::vector<Craft::Vector2I> patrolPath;
-	size_t currentPathIndex = 0;
 
 	// 이미지 파일이름
 	const std::string enemyPatrolFilename = "Actors/Enemy/minifish_patrol.txt";

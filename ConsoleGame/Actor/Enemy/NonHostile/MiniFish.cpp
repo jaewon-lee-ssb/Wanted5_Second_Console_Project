@@ -44,7 +44,7 @@ void MiniFish::Tick(float deltaTime)
 	super::Tick(deltaTime);
 	
 	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
-	if ((enemyState == EnemyState::Patrol || enemyState == EnemyState::Return) && DetectPlayer())
+	if ((enemyState == EnemyState::Patrol || enemyState == EnemyState::Return) && DetectTarget())
 	{
 		ChangeEnemyState(EnemyState::Flee);
 
@@ -59,27 +59,6 @@ void MiniFish::Tick(float deltaTime)
 	}
 
 	
-}
-
-bool MiniFish::DetectPlayer() const
-{
-	if (auto player = target.lock())
-	{
-		const Craft::Vector2F difference = player->GetPosition() - GetPosition();
-
-		const float diffX = difference.x;
-		const float diffY = difference.y * 2.f;
-
-		const float adjustedDistanceSquared = diffX * diffX + diffY * diffY;
-
-		const float detectDistanceSquared = detectRadius * detectRadius;
-
-		if (adjustedDistanceSquared <= detectDistanceSquared)
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 void MiniFish::FollowPath(float deltaTime)
@@ -225,7 +204,7 @@ void MiniFish::UpdateFlee(float deltaTime)
 {
 	super::UpdateFlee(deltaTime);
 
-	auto player = target.lock();
+	auto player = targetPtr.lock();
 	auto map = tileMap.lock();
 
 	if (!player || !map)

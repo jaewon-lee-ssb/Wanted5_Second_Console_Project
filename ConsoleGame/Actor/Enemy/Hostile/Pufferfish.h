@@ -15,10 +15,16 @@ public:
 
 	static Craft::Bounds GetSpawnBounds(const Craft::Vector2F& position);
 
-private:
+protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 
+	virtual void UpdatePatrol(float deltaTime) override;
+	virtual void UpdateChase(float deltaTime) override;
+	virtual void UpdateAttack(float deltaTime) override;
+	virtual void UpdateFlee(float deltaTime) override;
+	virtual void UpdateReturn(float deltaTime) override;
+	virtual void UpdateDead(float deltaTime) override;
 
 private:
 

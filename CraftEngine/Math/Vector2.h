@@ -92,12 +92,6 @@ namespace Craft
 		float y = 0.f;
 	};
 
-	float GetDistanceSquared(const Vector2F& position)
-	{
-		const float diffX = position.x;
-		const float diffY = position.y * 2.f;
-
-		return diffX * diffX + diffY * diffY;
-	}
+	CRAFT_API float GetDistanceSquared(const Vector2F& position);
 
 }

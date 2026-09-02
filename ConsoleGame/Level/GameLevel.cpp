@@ -2,6 +2,7 @@
 
 #include <Actor/Player/Player.h>
 #include <Actor/Enemy/NonHostile/MiniFish.h>
+#include <Actor/Enemy/Hostile/Pufferfish.h>
 #include <Actor/Enemy/EnemySpawner.h>
 
 #include <Engine/Engine.h>
@@ -33,6 +34,8 @@ void GameLevel::OnInitialized()
 
 	auto enemySpawner = SpawnActor<EnemySpawner>();
 	enemySpawner->SetTileMap(map);
+
+	auto enemy = SpawnActor<Pufferfish>(Craft::Vector2F(100.f, 50.f));
 
 }
 

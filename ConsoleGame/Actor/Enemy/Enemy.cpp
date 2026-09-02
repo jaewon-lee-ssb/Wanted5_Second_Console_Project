@@ -88,3 +88,26 @@ void Enemy::UpdateAnimation(float deltaTime)
 		ChangeImage(enemySpriteAnimation[currentStateIndex][currentAnimationSpriteIndex]);
 	}
 }
+
+bool Enemy::DetectTarget() const
+{
+	if (auto target = targetPtr.lock())
+	{
+		const Craft::Vector2F difference = target->GetPosition() - GetPosition();
+
+		const float diffX = difference.x;
+		const float diffY = difference.y * 2.f;
+
+		// 타겟과의 차이 거리 제곱
+		const float adjustedDistanceSquared = diffX * diffX + diffY * diffY;
+		
+		// 감지 범위의 길이 제곱
+		const float detectDistanceSquared = detectRadius * detectRadius;
+
+		if (adjustedDistanceSquared <= detectDistanceSquared)
+		{
+			return true;
+		}
+	}
+	return false;
+}

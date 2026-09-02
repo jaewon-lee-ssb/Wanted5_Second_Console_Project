@@ -29,11 +29,42 @@ Craft::Bounds Pufferfish::GetSpawnBounds(const Craft::Vector2F& position)
 
 void Pufferfish::BeginPlay()
 {
+	super::BeginPlay();
 }
 
 void Pufferfish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 	
+}
+
+void Pufferfish::UpdatePatrol(float deltaTime)
+{
+	super::UpdatePatrol(deltaTime);
+}
+
+void Pufferfish::UpdateChase(float deltaTime)
+{
+	super::UpdateChase(deltaTime);
+}
+
+void Pufferfish::UpdateAttack(float deltaTime)
+{
+	super::UpdateAttack(deltaTime);
+}
+
+void Pufferfish::UpdateFlee(float deltaTime)
+{
+	super::UpdateFlee(deltaTime);
+}
+
+void Pufferfish::UpdateReturn(float deltaTime)
+{
+	super::UpdateReturn(deltaTime);
+}
+
+void Pufferfish::UpdateDead(float deltaTime)
+{
+	super::UpdateDead(deltaTime);
 }
 
