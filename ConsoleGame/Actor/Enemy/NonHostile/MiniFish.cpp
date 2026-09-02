@@ -2,8 +2,8 @@
 
 #include <Resource/TextImageLoader.h>
 #include <Utility/Random.h>
-
 #include <World/TileMap.h>
+
 
 MiniFish::MiniFish(const Craft::Vector2F& position)
 	: super(position)
@@ -82,135 +82,15 @@ void MiniFish::UpdateState(float deltaTime)
 	}
 }
 
-void MiniFish::FollowPath(float deltaTime)
-{
-	auto map = tileMap.lock();
-
-	if (!map)
-	{
-		return;
-	}
-
-	// 목표 지점에 도착하면 초기화
-	if (currentPathIndex >= patrolPath.size())
-	{
-		ResetPath();
-		return;
-	}
-
-	// A*가 반환한 현재 타일 좌표
-	const Craft::Vector2I pathTile = patrolPath[currentPathIndex];
-
-	// 타일의 왼쪽 위 월드 좌표
-	Craft::Vector2F targetPosition = map->TileToWorld(pathTile.x, pathTile.y);
-
-	// 타일 중앙 좌표로 보정
-	const Craft::Vector2I tileSize = map->GetTileSize();
-
-	targetPosition = targetPosition + Craft::Vector2F(tileSize.x * 0.5f, tileSize.y * 0.5f);
-
-	// 여기부터 목표 좌표를 향해 이동
-	Craft::Vector2F difference = targetPosition - GetPosition();
-
-	const float distance = difference.Length();
-
-	const Craft::Vector2F direction = difference.Normalize();
-
-	const Craft::Vector2F movement(direction.x * enemyMoveSpeed * 2 * deltaTime, direction.y * enemyMoveSpeed * deltaTime);
-
-	if (distance <= 0.5f || movement.Length() >= distance)
-	{
-		if (!map->OverlapsSolid(GetBoundsAt(targetPosition)))
-		{
-			SetPosition(targetPosition);
-			++currentPathIndex;
-		}
-
-		return;
-	}
-
-	const Craft::Vector2F newPosition = GetPosition() + movement;
-
-	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
-	{
-		SetPosition(newPosition);
-	}
-	else
-	{
-		ResetPath();
-	}
-}
-
-void MiniFish::FindRandomPatrolPoint()
-{
-	const float randomTargetX = Utility::RandomRange(-patrolRadius * 2, patrolRadius * 2);
-	const float randomTargetY = Utility::RandomRange(-patrolRadius, patrolRadius);
-
-	if (auto map = tileMap.lock())
-	{
-		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(patrolOrigin.x + randomTargetX, patrolOrigin.y + randomTargetY), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
-	}
-}
-
-void MiniFish::FindReturnPath()
-{
-	if (auto map = tileMap.lock())
-	{
-		patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
-	}
-}
-
-void MiniFish::MoveWithTileCollision(const Craft::Vector2F& movement)
-{
-	auto map = tileMap.lock();
-
-	if (!map)
-	{
-		return;
-	}
-
-	Craft::Vector2F newPosition = GetPosition();
-
-	// X축 이동
-	newPosition.x += movement.x;
-
-	if (!map->OverlapsSolid(
-		GetBoundsAt(newPosition)))
-	{
-		SetPosition(newPosition);
-	}
-	else
-	{
-		newPosition.x = GetPosition().x;
-	}
-
-	// Y축 이동
-	newPosition.y += movement.y;
-
-	if (!map->OverlapsSolid(
-		GetBoundsAt(newPosition)))
-	{
-		SetPosition(newPosition);
-	}
-}
-
-void MiniFish::ResetPath()
-{
-	patrolPath.clear();
-	currentPathIndex = 0;
-}
-
 void MiniFish::UpdatePatrol(float deltaTime)
 {
-	
-
 	if (patrolPath.empty())
 	{
 		patrolWaitTime -= deltaTime;
 
 		if (patrolWaitTime <= 0.f)
 		{
-			FindRandomPatrolPoint();
+			FindRandomPatrolPoint(patrolRadius);
 			patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
 			patrolWaitTime = patrolRetryInterval;
 		}
@@ -262,13 +142,13 @@ void MiniFish::UpdateFlee(float deltaTime)
 void MiniFish::UpdateReturn(float deltaTime)
 {
 
-
 	if (patrolPath.empty())
 	{
 		patrolWaitTime -= deltaTime;
 
 		if (patrolWaitTime <= 0.f)
 		{
+			
 			if (auto map = tileMap.lock())
 			{
 				patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));

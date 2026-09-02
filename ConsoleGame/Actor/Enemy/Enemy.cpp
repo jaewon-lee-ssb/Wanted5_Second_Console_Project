@@ -2,6 +2,8 @@
 #include <Actor/Player/Player.h>
 
 #include <Level/Level.h>
+#include <World/TileMap.h>
+#include <Utility/Random.h>
 
 Enemy::Enemy(const Craft::Vector2F& position)
 	: super({}, position)
@@ -25,52 +27,8 @@ void Enemy::Tick(float deltaTime)
 
 void Enemy::UpdateState(float deltaTime)
 {
-	/*switch (enemyState)
-	{
-	case EnemyState::Patrol:
-		UpdatePatrol(deltaTime);
-		break;
-	case EnemyState::Chase:
-		UpdateChase(deltaTime);
-		break;
-	case EnemyState::Attack:
-		UpdateAttack(deltaTime);
-		break;
-	case EnemyState::Flee:
-		UpdateFlee(deltaTime);
-		break;
-	case EnemyState::Return:
-		UpdateReturn(deltaTime);
-		break;
-	case EnemyState::Dead:
-		UpdateDead(deltaTime);
-		break;
-	}*/
+	
 }
-
-//void Enemy::UpdatePatrol(float deltaTime)
-//{
-//}
-//
-//void Enemy::UpdateChase(float deltaTime)
-//{
-//}
-//
-//void Enemy::UpdateAttack(float deltaTime)
-//{
-//}
-//
-//void Enemy::UpdateFlee(float deltaTime)
-//{
-//}
-//
-//void Enemy::UpdateReturn(float deltaTime)
-//{
-//}
-//
-//void Enemy::UpdateDead(float deltaTime)
-//{
-//}
 
 void Enemy::UpdateAnimation(float deltaTime)
 {
@@ -95,11 +53,8 @@ bool Enemy::DetectTarget() const
 	{
 		const Craft::Vector2F difference = target->GetPosition() - GetPosition();
 
-		const float diffX = difference.x;
-		const float diffY = difference.y * 2.f;
-
 		// 타겟과의 차이 거리 제곱
-		const float adjustedDistanceSquared = diffX * diffX + diffY * diffY;
+		const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
 		
 		// 감지 범위의 길이 제곱
 		const float detectDistanceSquared = detectRadius * detectRadius;
@@ -110,4 +65,133 @@ bool Enemy::DetectTarget() const
 		}
 	}
 	return false;
+}
+
+void Enemy::FollowPath(float deltaTime)
+{
+	auto map = tileMap.lock();
+
+	if (!map)
+	{
+		return;
+	}
+
+	// 목표 지점에 도착하면 초기화
+	if (currentPathIndex >= patrolPath.size())
+	{
+		ResetPath();
+		return;
+	}
+
+	// A*가 반환한 현재 타일 좌표
+	const Craft::Vector2I pathTile = patrolPath[currentPathIndex];
+
+	// 타일의 왼쪽 위 월드 좌표
+	Craft::Vector2F targetPosition = map->TileToWorld(pathTile.x, pathTile.y);
+
+	// 타일 중앙 좌표로 보정
+	const Craft::Vector2I tileSize = map->GetTileSize();
+
+	targetPosition = targetPosition + Craft::Vector2F(tileSize.x * 0.5f, tileSize.y * 0.5f);
+
+	// 여기부터 목표 좌표를 향해 이동
+	Craft::Vector2F difference = targetPosition - GetPosition();
+	const Craft::Vector2F direction = difference.Normalize();
+
+	// 거리 비교를 위해계산을 위한 제곱
+	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
+
+	const Craft::Vector2F movement(direction.x * enemyMoveSpeed * 2 * deltaTime, direction.y * enemyMoveSpeed * deltaTime);
+
+	const float adjustedMovementSquared = Craft::GetDistanceSquared(movement);
+
+	if (adjustedDistanceSquared <= 0.5f * 0.5f || adjustedMovementSquared >= adjustedDistanceSquared)
+	{
+		if (!map->OverlapsSolid(GetBoundsAt(targetPosition)))
+		{
+			SetPosition(targetPosition);
+			++currentPathIndex;
+		}
+
+		return;
+	}
+
+	const Craft::Vector2F newPosition = GetPosition() + movement;
+
+	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	{
+		SetPosition(newPosition);
+	}
+	else
+	{
+		ResetPath();
+	}
+}
+
+void Enemy::FindRandomPatrolPoint(const float& patrolRadius)
+{
+	// 패트롤 시작 지점으로 부터 범위내 랜덤 위치로 패트롤 길 찾기
+	const float randomTargetX = Utility::RandomRange(-patrolRadius * 2, patrolRadius * 2);
+	const float randomTargetY = Utility::RandomRange(-patrolRadius, patrolRadius);
+
+	if (auto map = tileMap.lock())
+	{
+		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(patrolOrigin.x + randomTargetX, patrolOrigin.y + randomTargetY), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+	}
+}
+
+void Enemy::FindReturnPath()
+{
+	// 패트롤 시작지점으로 돌아가는 길 찾기
+	if (auto map = tileMap.lock())
+	{
+		patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+	}
+}
+
+void Enemy::MoveWithTileCollision(const Craft::Vector2F& movement)
+{
+	auto map = tileMap.lock();
+
+	if (!map)
+	{
+		return;
+	}
+
+	Craft::Vector2F newPosition = GetPosition();
+
+	// X축 이동
+	newPosition.x += movement.x;
+
+	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	{
+		// 갈수 있는 곳이면 이동
+		SetPosition(newPosition);
+	}
+	else
+	{
+		// 갈수 없으면 이동 안함
+		newPosition.x = GetPosition().x;
+	}
+
+	// Y축 이동
+	newPosition.y += movement.y;
+
+	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	{
+		// 갈수 있으면 이동
+		SetPosition(newPosition);
+	}
+	else
+	{
+		// 갈수 없으면 이동 안함
+		newPosition.y = GetPosition().y;
+	}
+}
+
+void Enemy::ResetPath()
+{
+	// 길 저장해있는거 초기화
+	patrolPath.clear();
+	currentPathIndex = 0;
 }

@@ -32,21 +32,27 @@ protected:
 	// 현재 상태따라 업데이트 상태 불러줌
 	virtual void UpdateState(float deltaTime);
 
-	// 각종 상태 업데이트
-	/*virtual void UpdatePatrol(float deltaTime);
-	virtual void UpdateChase(float deltaTime);
-	virtual void UpdateAttack(float deltaTime);
-	virtual void UpdateFlee(float deltaTime);
-	virtual void UpdateReturn(float deltaTime);
-	virtual void UpdateDead(float deltaTime);*/
-
 	// 애니메이션 업데이트 함수
 	void UpdateAnimation(float deltaTime);
 
 	// 상태 변화 함수
 	void ChangeEnemyState(const EnemyState& state) { enemyState = state; }
 
+	// 타겟과의 거리
 	bool DetectTarget() const;
+
+	// 패트롤 
+	void FollowPath(float deltaTime);
+	void FindRandomPatrolPoint(const float& patrolRadius);
+
+	// 다시 돌아오는 길찾기
+	void FindReturnPath();
+
+	// 도망
+	void MoveWithTileCollision(const Craft::Vector2F& movement);
+
+	// 초기화
+	void ResetPath();
 
 
 protected:
@@ -60,6 +66,12 @@ protected:
 
 	// 감지 범위
 	float detectRadius = 50.f;
+
+	// 패트롤 위치
+	Craft::Vector2F patrolOrigin;
+
+	// 패트롤 범위
+	//float patrolRadius = 30.f;
 
 	// 애니메이션 관련 변수
 	float animationElapsedTime = 0.f;

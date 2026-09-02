@@ -28,18 +28,7 @@ protected:
 
 private:
 
-	// 패트롤 
-	void FollowPath(float deltaTime);
-	void FindRandomPatrolPoint();
-
-	// 다시 돌아오는 길찾기
-	void FindReturnPath();
-
-	// 도망
-	void MoveWithTileCollision(const Craft::Vector2F& movement);
-
-	// 초기화
-	void ResetPath();
+	
 
 
 private:
@@ -48,7 +37,6 @@ private:
 
 	// 패트롤 위치
 	Craft::Vector2F patrolOrigin;
-	Craft::Vector2F patrolTarget;
 
 	// 패트롤 범위
 	float patrolRadius = 30.f;
