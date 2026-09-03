@@ -4,6 +4,8 @@
 
 #include <Actor/Enemy/EnemyTypes.h>
 
+#include <Utility/Timer.h>
+
 namespace Craft
 {
 	class TileMap;
@@ -17,12 +19,12 @@ public:
 	Enemy(const Craft::Vector2F& position);
 	~Enemy() = default;
 
+	// 타일맵 지정함수
 	void SetTileMap(const std::shared_ptr<Craft::TileMap>& newMap) { tileMap = newMap; }
 
 	void SetMoveSpeed(float moveSpeed) { enemyMoveSpeed = moveSpeed; }
 
 	// Getter/Setter
-	inline float GetHp() const { return Hp; }
 	inline bool IsDead() const { return isDead; }
 
 protected:
@@ -36,23 +38,32 @@ protected:
 	void UpdateAnimation(float deltaTime);
 
 	// 상태 변화 함수
-	void ChangeEnemyState(const EnemyState& state) { enemyState = state; }
+	void ChangeEnemyState(const EnemyState& state) { curState = state; }
 
 	// 타겟과의 거리
 	bool DetectTarget() const;
 
-	// 패트롤 
+	bool CheckDead();
+
+	// 길 따라가는 함수
 	void FollowPath(float deltaTime);
-	void FindRandomPatrolPoint(const float& patrolRadius);
+
+	// 길 찾기 함수
+	bool FindPathTo(const Craft::Vector2F& destination);
+
+	// 충돌체크하면서 이동하는 함수
+	void MoveWithTileCollision(const Craft::Vector2F& movement);
+
+	bool FindRandomPatrolPoint(Craft::Vector2F& randPosition, const float& patrolRadius);
 
 	// 다시 돌아오는 길찾기
-	void FindReturnPath();
-
-	// 도망
-	void MoveWithTileCollision(const Craft::Vector2F& movement);
+	bool FindReturnPath();
 
 	// 초기화
 	void ResetPath();
+
+	// 부모 변수 초기화
+	virtual void InitEnemy();
 
 
 protected:
@@ -60,28 +71,37 @@ protected:
 	float enemyMoveSpeed = 0.f;
 	
 	// 체력
-	float Hp = 100.f;
+	float Hp = 0;
 	bool isDamaged = false;
 	bool isDead = false;
 
 	// 감지 범위
-	float detectRadius = 50.f;
+	float detectRadius = 0.f;
+
+	// 패트롤 범위
+	float patrolRadius = 0.f;
+
+	// 다시 패트롤하는 쿨타임 랜덤설정할거임
+	float patrolRetryInterval = 0.f;
+
+	// 이 거리가 넘으면 도망 종료
+	float fleeEndDistance = 0.f;
 
 	// 패트롤 위치
 	Craft::Vector2F patrolOrigin;
 
-	// 패트롤 범위
-	//float patrolRadius = 30.f;
-
 	// 애니메이션 관련 변수
-	float animationElapsedTime = 0.f;
 	float animationFrameTime = 0.2f;
 
+	// 각종 타이머
+	Utility::Timer animationTimer;
+	Utility::Timer enemyWaitTimer;
+
+	// 현재 몇번째 프레임 가리키는 인덱스
 	int currentAnimationSpriteIndex = 0;
-	int currentStateIndex = 0;
 
 	// A* 관련 변수
-	std::vector<Craft::Vector2I> patrolPath;
+	std::vector<Craft::Vector2I> movePath;
 	size_t currentPathIndex = 0;
 
 	// 타일 맵 참조
@@ -91,7 +111,7 @@ protected:
 	std::weak_ptr<Actor> targetPtr;
 	
 	// 현재 상태
-	EnemyState enemyState = EnemyState::Patrol;
+	EnemyState curState = EnemyState::Patrol;
 
 	// 적 애니메이션
 	std::vector<std::vector<Craft::PixelImage>> enemySpriteAnimation;

@@ -8,20 +8,12 @@
 MiniFish::MiniFish(const Craft::Vector2F& position)
 	: super(position)
 {
-	enemyState = EnemyState::Patrol;
+	curState = EnemyState::Patrol;
 	enemySpriteAnimation[static_cast<int>(EnemyState::Patrol)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
 
-	currentStateIndex = static_cast<int>(EnemyState::Patrol);
-	ChangeImage(enemySpriteAnimation[currentStateIndex][0]);
+	ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][0]);
 
-
-	// 속도 지정
-	enemyMoveSpeed = 30.f;
-
-	patrolOrigin = position;
-	 
-	// 패트롤 지연타임
-	patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
+	InitEnemy();
 }
 
 Craft::Bounds MiniFish::GetSpawnBounds(const Craft::Vector2F& position)
@@ -43,8 +35,11 @@ void MiniFish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 	
+	enemyWaitTimer.Tick(deltaTime);
+
+
 	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
-	if ((enemyState == EnemyState::Patrol || enemyState == EnemyState::Return) && DetectTarget())
+	if ((curState == EnemyState::Patrol || curState == EnemyState::Return) && DetectTarget())
 	{
 		ChangeEnemyState(EnemyState::Flee);
 
@@ -55,17 +50,16 @@ void MiniFish::Tick(float deltaTime)
 	// 디버그 경로 출력
 	if (auto map = tileMap.lock())
 	{
-		map->QueueDebugPath(patrolPath, currentPathIndex);
+		map->QueueDebugPath(movePath, currentPathIndex);
 	}
 
-	
 }
 
 void MiniFish::UpdateState(float deltaTime)
 {
 	super::UpdateState(deltaTime);
 
-	switch (enemyState)
+	switch (curState)
 	{
 	case EnemyState::Patrol:
 		UpdatePatrol(deltaTime);
@@ -84,15 +78,14 @@ void MiniFish::UpdateState(float deltaTime)
 
 void MiniFish::UpdatePatrol(float deltaTime)
 {
-	if (patrolPath.empty())
+	if (movePath.empty() && enemyWaitTimer.IsTimeOut())
 	{
-		patrolWaitTime -= deltaTime;
-
-		if (patrolWaitTime <= 0.f)
+		Craft::Vector2F randPosition = Craft::Vector2F::Zero;
+		if (FindRandomPatrolPoint(randPosition, patrolRadius))
 		{
-			FindRandomPatrolPoint(patrolRadius);
-			patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
-			patrolWaitTime = patrolRetryInterval;
+			// 랜덤 위치 찾을때 이미 검증을 하므로 검증 안해도됨
+			FindPathTo(randPosition);
+			enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 		}
 	}
 	else
@@ -103,8 +96,6 @@ void MiniFish::UpdatePatrol(float deltaTime)
 
 void MiniFish::UpdateFlee(float deltaTime)
 {
-	
-
 	auto target = targetPtr.lock();
 	auto map = tileMap.lock();
 
@@ -142,19 +133,11 @@ void MiniFish::UpdateFlee(float deltaTime)
 void MiniFish::UpdateReturn(float deltaTime)
 {
 
-	if (patrolPath.empty())
+	if (movePath.empty() && enemyWaitTimer.IsTimeOut())
 	{
-		patrolWaitTime -= deltaTime;
-
-		if (patrolWaitTime <= 0.f)
+		if(FindReturnPath())
 		{
-			
-			if (auto map = tileMap.lock())
-			{
-				patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
-			}
-			patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
-			patrolWaitTime = patrolRetryInterval;
+			enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 		}
 	}
 	else
@@ -174,7 +157,6 @@ void MiniFish::UpdateReturn(float deltaTime)
 	if (adjustedDistanceSquared <= patrolRadiusSquared)
 	{
 		ChangeEnemyState(EnemyState::Patrol);
-		enemyState = EnemyState::Patrol;
 
 		ResetPath();
 
@@ -186,4 +168,35 @@ void MiniFish::UpdateReturn(float deltaTime)
 
 void MiniFish::UpdateDead(float deltaTime)
 {
+	// 체크함수는 충돌체크 함수에다가 넣어주면 될거같다.
+	
+	Destroy();
+
+}
+
+void MiniFish::InitEnemy()
+{
+	super::InitEnemy();
+
+	// 이동속도
+	enemyMoveSpeed = 30.f;
+
+	// 체력
+	Hp = 100.f;
+	isDamaged = false;
+	isDead = false;
+
+	// 감지 범위
+	detectRadius = 30.f;
+
+	// 패트롤 범위
+	patrolRadius = 60.f;
+
+	// 다시 패트롤하는 쿨타임 랜덤설정할거임
+	patrolRetryInterval = 0.5f;
+
+	// 이 거리가 넘으면 도망 종료
+	fleeEndDistance = 70.f;
+
+	enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 }

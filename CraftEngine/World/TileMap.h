@@ -47,7 +47,7 @@ namespace Craft
 		// 좌표의 타일타입 게터함수
 		TileType GetTile(int x, int y) const;
 		// 좌표의 타일이 벽인지 체크 함수
-		bool IsSolid(int x, int y) const;
+		bool IsBlocked(int x, int y) const;
 
 		// 위치 변환 좌표
 		Vector2F TileToWorld(int x, int y) const;
@@ -60,7 +60,7 @@ namespace Craft
 		const Vector2I GetTileSize() const { return Vector2I(tileWidth, tileHeight); }
 
 		// 벽과 충돌 체크 함수
-		bool OverlapsSolid(const Bounds& worldBounds) const;
+		bool CanOccupyWorld(const Bounds& worldBounds) const;
 
 		// 경로 찾는 함수.
 		std::vector<Vector2I> FindPath(const Vector2F& startWorldPosition, const Vector2F& goalWorldPosition, float imageWidth, float imageHeight) const;

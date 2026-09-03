@@ -37,7 +37,7 @@ namespace Craft
 		virtual void OnCollision(const std::shared_ptr<Actor>& other);
 
 		// 액터의 이미지 변경.
-		void ChangeImage(const PixelImage& newImage)
+		inline void ChangeImage(const PixelImage& newImage)
 		{
 			// 새로운 이미지로 교체
 			image = newImage;
@@ -65,6 +65,7 @@ namespace Craft
 		void SetPosition(const Vector2F& newPosition);
 
 		inline Vector2F GetPivot() const { return pivot; }
+		//inline void SetPivot() { pivot.x = image.width / 2.f; pivot.y = image.height / 2.f; }
 
 		// 이전 위치 반환 함수
 		inline Vector2F GetPreviousPosition() const { return previousPosition; }

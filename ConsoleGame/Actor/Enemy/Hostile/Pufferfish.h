@@ -30,23 +30,6 @@ protected:
 
 private:
 
-	// 패트롤 위치
-	Craft::Vector2F patrolOrigin;
-	Craft::Vector2F patrolTarget;
-
-	// 패트롤 범위
-	float patrolRadius = 30.f;
-	float patrolWaitTime = 0.f;
-
-	// 다시 패트롤하는 쿨타임 랜덤설정할거임
-	float patrolRetryInterval = 0.5f;
-
-	// 감지 범위
-	float detectRadius = 50.f;
-
-	// A* 관련 변수
-	std::vector<Craft::Vector2I> patrolPath;
-	size_t currentPathIndex = 0;
 
 	// 이미지 파일이름
 	const std::string enemyPatrolFilename = "Actors/Enemy/pufferfish_attack.txt";

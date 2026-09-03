@@ -9,8 +9,7 @@ Pufferfish::Pufferfish(const Craft::Vector2F& position)
 	enemyState = EnemyState::Patrol;
 	enemySpriteAnimation[static_cast<int>(EnemyState::Patrol)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
 
-	currentStateIndex = static_cast<int>(EnemyState::Patrol);
-	ChangeImage(enemySpriteAnimation[currentStateIndex][0]);
+	ChangeImage(enemySpriteAnimation[enemyState][0]);
 
 
 	// 속도 지정

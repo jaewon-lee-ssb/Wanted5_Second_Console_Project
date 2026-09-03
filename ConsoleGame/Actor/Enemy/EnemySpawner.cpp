@@ -54,7 +54,7 @@ void EnemySpawner::SpawnEnemy()
 
 		const Craft::Bounds spawnBounds = MiniFish::GetSpawnBounds(spawnPoint);
 
-		if (map->OverlapsSolid(spawnBounds))
+		if (!map->CanOccupyWorld(spawnBounds))
 		{
 			// 생성위치에 몬스터가 들어갈수 없다면
 			continue;

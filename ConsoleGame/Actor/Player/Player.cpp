@@ -143,7 +143,7 @@ void Player::Move(float deltaTime)
 	movement.x = playerMoveDir.Normalize().x * playerMoveSpeedX * deltaTime;
 	newPosition.x += movement.x;
 
-	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	if (map->CanOccupyWorld(GetBoundsAt(newPosition)))
 	{
 		SetPosition(newPosition);
 	}
@@ -154,7 +154,7 @@ void Player::Move(float deltaTime)
 
 	movement.y = playerMoveDir.Normalize().y * playerMoveSpeedY * deltaTime;
 	newPosition.y += movement.y;
-	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	if (map->CanOccupyWorld(GetBoundsAt(newPosition)))
 	{
 		SetPosition(newPosition);
 	}

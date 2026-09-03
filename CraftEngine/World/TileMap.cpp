@@ -125,7 +125,7 @@ namespace Craft
 		return tiles[y * tilemapWidth + x];
 	}
 
-	bool TileMap::IsSolid(int x, int y) const
+	bool TileMap::IsBlocked(int x, int y) const
 	{
 		return GetTile(x, y) == TileType::Wall;
 	}
@@ -144,10 +144,9 @@ namespace Craft
 		outY = static_cast<int>(std::floor(localPosition.y / tileHeight));
 	}
 
-	bool TileMap::OverlapsSolid(const Bounds& worldBounds) const
+	bool TileMap::CanOccupyWorld(const Bounds& worldBounds) const
 	{
-		// 월드 좌표에서 타일맵 위치를 빼서
-		// 타일맵 내부 로컬 좌표로 변환
+		// 월드 좌표에서 타일맵 위치를 빼서 타일맵 내부 로컬 좌표로 변환
 		const float localLeft = worldBounds.left - GetPosition().x;
 		const float localRight = worldBounds.right - GetPosition().x;
 		const float localTop = worldBounds.top - GetPosition().y;
@@ -164,16 +163,16 @@ namespace Craft
 		{
 			for (int tileX = leftTile; tileX <= rightTile; ++tileX)
 			{
-				if (IsSolid(tileX, tileY))
+				if (IsBlocked(tileX, tileY))
 				{
 					// 벽이 있다
-					return true;
+					return false;
 				}
 			}
 		}
 
 		// 벽이 없다
-		return false;
+		return true;
 	}
 
 	std::vector<Vector2I> TileMap::FindPath(const Vector2F& startWorldPosition, const Vector2F& goalWorldPosition, float actorWidth, float actorHeight) const
@@ -191,7 +190,7 @@ namespace Craft
 			startWorldPosition.y + actorHeight * 0.5f
 		};
 
-		if (OverlapsSolid(startBounds))
+		if (CanOccupyWorld(startBounds))
 		{
 			return {};
 		}
@@ -340,15 +339,15 @@ namespace Craft
 		{
 			for (int tileX = 0; tileX < tilemapWidth; ++tileX)
 			{
-				if (!IsSolid(tileX, tileY))
+				if (!IsBlocked(tileX, tileY))
 				{
 					continue;
 				}
 
-				const bool exposedUp = !IsSolid(tileX, tileY - 1);
-				const bool exposedDown = !IsSolid(tileX, tileY + 1);
-				const bool exposedLeft = !IsSolid(tileX - 1, tileY);
-				const bool exposedRight = !IsSolid(tileX + 1, tileY);
+				const bool exposedUp = !IsBlocked(tileX, tileY - 1);
+				const bool exposedDown = !IsBlocked(tileX, tileY + 1);
+				const bool exposedLeft = !IsBlocked(tileX - 1, tileY);
+				const bool exposedRight = !IsBlocked(tileX + 1, tileY);
 
 				for (int localY = 0; localY < tileHeight; ++localY)
 				{
@@ -440,7 +439,7 @@ namespace Craft
 		};
 
 		// 벽과 겹치지 않으면 들어갈수 있음
-		return !OverlapsSolid(bounds);
+		return CanOccupyWorld(bounds);
 	}
 
 }

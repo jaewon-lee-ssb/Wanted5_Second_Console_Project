@@ -26,24 +26,12 @@ protected:
 	void UpdateReturn(float deltaTime);
 	void UpdateDead(float deltaTime);
 
-private:
-
 	
 
+private:
+	virtual void InitEnemy() override;
 
 private:
-	// 이 거리가 넘으면 도망 종료
-	float fleeEndDistance = 70.f;
-
-	// 패트롤 위치
-	Craft::Vector2F patrolOrigin;
-
-	// 패트롤 범위
-	float patrolRadius = 30.f;
-	float patrolWaitTime = 0.f;
-
-	// 다시 패트롤하는 쿨타임 랜덤설정할거임
-	float patrolRetryInterval = 0.5f;
 
 
 	// 이미지 파일이름

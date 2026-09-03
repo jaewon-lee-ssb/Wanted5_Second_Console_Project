@@ -6,9 +6,13 @@
 #include <Utility/Random.h>
 
 Enemy::Enemy(const Craft::Vector2F& position)
-	: super({}, position)
+	: super({}, position), patrolOrigin(position)
 {
 	enemySpriteAnimation.resize(static_cast<int>(EnemyState::Count));
+
+	animationTimer.SetTargetTime(animationFrameTime);
+
+	InitEnemy();
 }
 
 void Enemy::BeginPlay()
@@ -33,17 +37,14 @@ void Enemy::UpdateState(float deltaTime)
 void Enemy::UpdateAnimation(float deltaTime)
 {
 	// 애니메이션 시간 추가
-	animationElapsedTime += deltaTime;
-
+	animationTimer.Tick(deltaTime);
 
 	// 애니메이션 프레임 교체
-	if (!enemySpriteAnimation[currentStateIndex].empty() && animationElapsedTime >= animationFrameTime)
+	if (!enemySpriteAnimation[static_cast<int>(curState)].empty() && animationTimer.IsTimeOut())
 	{
-		animationElapsedTime -= animationFrameTime;
+		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % enemySpriteAnimation[static_cast<int>(curState)].size();
 
-		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % enemySpriteAnimation[currentStateIndex].size();
-
-		ChangeImage(enemySpriteAnimation[currentStateIndex][currentAnimationSpriteIndex]);
+		ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][currentAnimationSpriteIndex]);
 	}
 }
 
@@ -67,6 +68,16 @@ bool Enemy::DetectTarget() const
 	return false;
 }
 
+bool Enemy::CheckDead()
+{
+	if (Hp <= 0.f)
+	{
+		isDead = true;
+		return true;
+	}
+	return false;
+}
+
 void Enemy::FollowPath(float deltaTime)
 {
 	auto map = tileMap.lock();
@@ -77,14 +88,14 @@ void Enemy::FollowPath(float deltaTime)
 	}
 
 	// 목표 지점에 도착하면 초기화
-	if (currentPathIndex >= patrolPath.size())
+	if (currentPathIndex >= movePath.size())
 	{
 		ResetPath();
 		return;
 	}
 
 	// A*가 반환한 현재 타일 좌표
-	const Craft::Vector2I pathTile = patrolPath[currentPathIndex];
+	const Craft::Vector2I pathTile = movePath[currentPathIndex];
 
 	// 타일의 왼쪽 위 월드 좌표
 	Craft::Vector2F targetPosition = map->TileToWorld(pathTile.x, pathTile.y);
@@ -96,6 +107,14 @@ void Enemy::FollowPath(float deltaTime)
 
 	// 여기부터 목표 좌표를 향해 이동
 	Craft::Vector2F difference = targetPosition - GetPosition();
+
+	if (difference == 0.f)
+	{
+		// 이미 도착했다면 반환
+		return;
+	}
+
+
 	const Craft::Vector2F direction = difference.Normalize();
 
 	// 거리 비교를 위해계산을 위한 제곱
@@ -107,7 +126,7 @@ void Enemy::FollowPath(float deltaTime)
 
 	if (adjustedDistanceSquared <= 0.5f * 0.5f || adjustedMovementSquared >= adjustedDistanceSquared)
 	{
-		if (!map->OverlapsSolid(GetBoundsAt(targetPosition)))
+		if (map->CanOccupyWorld(GetBoundsAt(targetPosition)))
 		{
 			SetPosition(targetPosition);
 			++currentPathIndex;
@@ -118,7 +137,7 @@ void Enemy::FollowPath(float deltaTime)
 
 	const Craft::Vector2F newPosition = GetPosition() + movement;
 
-	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	if (map->CanOccupyWorld(GetBoundsAt(newPosition)))
 	{
 		SetPosition(newPosition);
 	}
@@ -128,25 +147,59 @@ void Enemy::FollowPath(float deltaTime)
 	}
 }
 
-void Enemy::FindRandomPatrolPoint(const float& patrolRadius)
+bool Enemy::FindPathTo(const Craft::Vector2F& destination)
 {
-	// 패트롤 시작 지점으로 부터 범위내 랜덤 위치로 패트롤 길 찾기
-	const float randomTargetX = Utility::RandomRange(-patrolRadius * 2, patrolRadius * 2);
-	const float randomTargetY = Utility::RandomRange(-patrolRadius, patrolRadius);
+	// 새 경로를 받으므로 이전 경로 초기화
+	ResetPath();
 
-	if (auto map = tileMap.lock())
+	auto map = tileMap.lock();
+
+	if (!map)
 	{
-		patrolPath = map->FindPath(GetPosition(), Craft::Vector2F(patrolOrigin.x + randomTargetX, patrolOrigin.y + randomTargetY), static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+		// 타일맵이 존재 하지 않는다면 길찾기 실패
+		return false;
 	}
+
+	// 목적지에 들어갈 수 없다면 길찾기 실패
+	if (!map->CanOccupyWorld(GetBoundsAt(destination)))
+	{
+		return false;
+	}
+
+	movePath = map->FindPath(GetPosition(), destination, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
+
+	return true;
 }
 
-void Enemy::FindReturnPath()
+bool Enemy::FindRandomPatrolPoint(Craft::Vector2F& randPosition, const float& patrolRadius)
+{
+	auto map = tileMap.lock();
+	if (!map)
+	{
+		return false;
+	}
+	
+	Craft::Vector2F newRandomPosition = randPosition;
+
+	newRandomPosition.x = Utility::RandomRange(-patrolRadius * 2, patrolRadius * 2);
+	newRandomPosition.y = Utility::RandomRange(-patrolRadius, patrolRadius);
+	
+	// 새로운 랜덤 좌표에 액터가 들어갈수 없으면 반환
+	if (!map->CanOccupyWorld(GetBoundsAt(newRandomPosition)))
+	{	
+		return false;
+	}
+
+	// 들어갈 수 있다면 새로운 위치로 갱신
+	randPosition = newRandomPosition;
+	return true;
+}
+
+bool Enemy::FindReturnPath()
 {
 	// 패트롤 시작지점으로 돌아가는 길 찾기
-	if (auto map = tileMap.lock())
-	{
-		patrolPath = map->FindPath(GetPosition(), patrolOrigin, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
-	}
+
+	return FindPathTo(patrolOrigin);
 }
 
 void Enemy::MoveWithTileCollision(const Craft::Vector2F& movement)
@@ -163,7 +216,7 @@ void Enemy::MoveWithTileCollision(const Craft::Vector2F& movement)
 	// X축 이동
 	newPosition.x += movement.x;
 
-	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	if (map->CanOccupyWorld(GetBoundsAt(newPosition)))
 	{
 		// 갈수 있는 곳이면 이동
 		SetPosition(newPosition);
@@ -177,7 +230,7 @@ void Enemy::MoveWithTileCollision(const Craft::Vector2F& movement)
 	// Y축 이동
 	newPosition.y += movement.y;
 
-	if (!map->OverlapsSolid(GetBoundsAt(newPosition)))
+	if (map->CanOccupyWorld(GetBoundsAt(newPosition)))
 	{
 		// 갈수 있으면 이동
 		SetPosition(newPosition);
@@ -189,9 +242,15 @@ void Enemy::MoveWithTileCollision(const Craft::Vector2F& movement)
 	}
 }
 
+
 void Enemy::ResetPath()
 {
 	// 길 저장해있는거 초기화
-	patrolPath.clear();
+	movePath.clear();
 	currentPathIndex = 0;
+}
+
+void Enemy::InitEnemy()
+{
+	
 }
