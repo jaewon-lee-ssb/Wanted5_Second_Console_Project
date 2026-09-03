@@ -1,29 +1,26 @@
 ﻿#include <Actor/Enemy/Hostile/Pufferfish.h>
 
 #include <Resource/TextImageLoader.h>
+#include <World/TileMap.h>
 #include <Utility/Random.h>
 
 Pufferfish::Pufferfish(const Craft::Vector2F& position)
 	: super(position)
 {
-	enemyState = EnemyState::Patrol;
+	curState = EnemyState::Patrol;
 	enemySpriteAnimation[static_cast<int>(EnemyState::Patrol)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
 
-	ChangeImage(enemySpriteAnimation[enemyState][0]);
+	ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][0]);
 
-
-	// 속도 지정
-	enemyMoveSpeed = 50.f;
-
-	patrolOrigin = position;
-
-	// 패트롤 지연타임
-	patrolRetryInterval = Utility::RandomRange(0.f, 0.5f);
+	InitEnemy();
 }
 
 Craft::Bounds Pufferfish::GetSpawnBounds(const Craft::Vector2F& position)
 {
-	return Craft::Bounds();
+	const float halfWidth = CollisionWidth * 0.5f;
+	const float halfHeight = CollisionHeight * 0.5f;
+
+	return Craft::Bounds(position.x - halfWidth, position.x + halfWidth, position.y - halfHeight, position.y + halfHeight);
 }
 
 void Pufferfish::BeginPlay()
@@ -34,6 +31,24 @@ void Pufferfish::BeginPlay()
 void Pufferfish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
+
+	enemyWaitTimer.Tick(deltaTime);
+	chaseTimer.Tick(deltaTime);
+
+	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
+	if ((curState == EnemyState::Patrol || curState == EnemyState::Return) && DetectTarget())
+	{
+		ChangeEnemyState(EnemyState::Chase);
+
+		ResetPath();
+	}
+
+
+	// 디버그 경로 출력
+	if (auto map = tileMap.lock())
+	{
+		map->QueueDebugPath(movePath, currentPathIndex);
+	}
 	
 }
 
@@ -41,7 +56,7 @@ void Pufferfish::UpdateState(float deltaTime)
 {
 	super::UpdateState(deltaTime);
 
-	switch (enemyState)
+	switch (curState)
 	{
 	case EnemyState::Patrol:
 		UpdatePatrol(deltaTime);
@@ -66,29 +81,181 @@ void Pufferfish::UpdateState(float deltaTime)
 
 void Pufferfish::UpdatePatrol(float deltaTime)
 {
-	
+	if (movePath.empty())
+	{
+		if (!enemyWaitTimer.IsTimeOut())
+		{
+			return;
+		}
+
+		Craft::Vector2F randPosition = Craft::Vector2F::Zero;
+		if (FindRandomPatrolPoint(randPosition, patrolRadius))
+		{
+			// 랜덤 위치 찾을때 이미 검증을 하므로 검증 안해도됨
+			FindPathTo(randPosition);
+			enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+		}
+	}
+	else
+	{
+		FollowPath(deltaTime);
+	}
 }
 
 void Pufferfish::UpdateChase(float deltaTime)
 {
+	bool isMoveEnd = false;
 
+	// 이동은 계속 해준다
+	if (!movePath.empty())
+	{
+		isMoveEnd = FollowPath(deltaTime);
+	}
+
+	if (movePath.empty() && !DetectTarget())
+	{
+		enemyWaitTimer.SetTargetTime(5.f);
+	}
+
+	if (movePath.empty() && !DetectTarget() && enemyWaitTimer.IsTimeOut())
+	{
+		ChangeEnemyState(EnemyState::Return);
+		ResetPath();
+		return;
+	}
+
+	auto target = targetPtr.lock();
+	if (!target || !chaseTimer.IsTimeOut())
+	{
+		return;
+	}
+	
+
+	// 찾지 못했으면 
+
+	if (!DetectTarget())
+	{
+
+		return;
+	}
+
+	// 찾았으면 타겟의 위치 갱신
+	if(isMoveEnd || movePath.empty())
+	{ 
+		chaseTimer.Reset();
+		FindPathTo(target->GetPosition());
+	}
 }
 
 void Pufferfish::UpdateAttack(float deltaTime)
 {
+	// 공격
 }
 
 void Pufferfish::UpdateFlee(float deltaTime)
 {
+	auto target = targetPtr.lock();
+	auto map = tileMap.lock();
+
+	if (!target || !map)
+	{
+		return;
+	}
+
+	const Craft::Vector2F difference = GetPosition() - target->GetPosition();
+
+	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
+	const float fleeDistanceSquared = fleeEndDistance * fleeEndDistance;
+
+	if (adjustedDistanceSquared >= fleeDistanceSquared)
+	{
+		ChangeEnemyState(EnemyState::Return);
+
+		ResetPath();
+
+		return;
+	}
+
+	if (adjustedDistanceSquared <= 0.f)
+	{
+		return;
+	}
+
+	const Craft::Vector2F direction = difference.Normalize();
+
+	const Craft::Vector2F movement{ direction.x * enemyMoveSpeed * 2 * deltaTime, direction.y * enemyMoveSpeed * deltaTime };
+
+	MoveWithTileCollision(movement);
 }
 
 void Pufferfish::UpdateReturn(float deltaTime)
 {
-	
+	if (movePath.empty() )
+	{
+		if (!enemyWaitTimer.IsTimeOut())
+		{
+			return;
+		}
+
+		if (FindReturnPath())
+		{
+			enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+		}
+	}
+	else
+	{
+		FollowPath(deltaTime);
+	}
+
+
+	// 어느정도 거리안에 들어왔으면 다시 패트롤 시작
+
+	const Craft::Vector2F difference = GetPosition() - patrolOrigin;
+
+	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
+	const float patrolRadiusSquared = patrolRadius * patrolRadius;
+
+	// 패트롤 범위 내에 들어오면 다시 패트롤 시작
+	if (adjustedDistanceSquared <= patrolRadiusSquared)
+	{
+		ChangeEnemyState(EnemyState::Patrol);
+
+		ResetPath();
+
+		return;
+	}
 }
 
 void Pufferfish::UpdateDead(float deltaTime)
 {
+	Destroy();
+}
 
+void Pufferfish::InitEnemy()
+{
+	super::InitEnemy();
+
+	// 이동속도
+	enemyMoveSpeed = 30.f;
+
+	// 체력
+	Hp = 150.f;
+	isDamaged = false;
+	isDead = false;
+
+	// 감지 범위
+	detectRadius = 150.f;
+
+	// 패트롤 범위
+	patrolRadius = 150.f;
+
+	// 다시 패트롤하는 쿨타임 랜덤설정할거임
+	patrolRetryInterval = 0.5f;
+
+	// 이 거리가 넘으면 도망 종료
+	fleeEndDistance = 70.f;
+
+	enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+	chaseTimer.SetTargetTime(0.5f);
 }
 

@@ -34,8 +34,8 @@ private:
 
 private:
 	// 플레이어 이동관련
-	float playerMoveSpeedX = 70.f;
-	float playerMoveSpeedY = 35.f;
+	float playerMoveSpeedX = 100.f;
+	float playerMoveSpeedY = 50.f;
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 

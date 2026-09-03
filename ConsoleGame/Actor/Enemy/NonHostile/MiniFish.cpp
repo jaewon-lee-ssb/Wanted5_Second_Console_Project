@@ -78,14 +78,18 @@ void MiniFish::UpdateState(float deltaTime)
 
 void MiniFish::UpdatePatrol(float deltaTime)
 {
-	if (movePath.empty() && enemyWaitTimer.IsTimeOut())
+	if (movePath.empty())
 	{
-		Craft::Vector2F randPosition = Craft::Vector2F::Zero;
-		if (FindRandomPatrolPoint(randPosition, patrolRadius))
+		if (enemyWaitTimer.IsTimeOut())
 		{
-			// 랜덤 위치 찾을때 이미 검증을 하므로 검증 안해도됨
-			FindPathTo(randPosition);
-			enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+			Craft::Vector2F PatrolPosition = GetPosition();
+			if (FindRandomPatrolPoint(PatrolPosition, patrolRadius))
+			{
+				// 랜덤 위치 찾을때 이미 검증을 하므로 검증 안해도됨
+				FindPathTo(PatrolPosition);
+				enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+			}
+			enemyWaitTimer.Reset();
 		}
 	}
 	else
@@ -162,8 +166,6 @@ void MiniFish::UpdateReturn(float deltaTime)
 
 		return;
 	}
-
-	
 }
 
 void MiniFish::UpdateDead(float deltaTime)

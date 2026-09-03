@@ -5,6 +5,9 @@
 #include <World/TileMap.h>
 #include <Utility/Random.h>
 
+#include <cmath>
+#include <algorithm>
+
 Enemy::Enemy(const Craft::Vector2F& position)
 	: super({}, position), patrolOrigin(position)
 {
@@ -31,7 +34,7 @@ void Enemy::Tick(float deltaTime)
 
 void Enemy::UpdateState(float deltaTime)
 {
-	
+	enemyWaitTimer.Tick(deltaTime);
 }
 
 void Enemy::UpdateAnimation(float deltaTime)
@@ -45,6 +48,8 @@ void Enemy::UpdateAnimation(float deltaTime)
 		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % enemySpriteAnimation[static_cast<int>(curState)].size();
 
 		ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][currentAnimationSpriteIndex]);
+		
+		animationTimer.Reset();
 	}
 }
 
@@ -72,26 +77,27 @@ bool Enemy::CheckDead()
 {
 	if (Hp <= 0.f)
 	{
+		ChangeEnemyState(EnemyState::Dead);
 		isDead = true;
 		return true;
 	}
 	return false;
 }
 
-void Enemy::FollowPath(float deltaTime)
+bool Enemy::FollowPath(float deltaTime)
 {
 	auto map = tileMap.lock();
 
 	if (!map)
 	{
-		return;
+		return false;
 	}
 
 	// 목표 지점에 도착하면 초기화
 	if (currentPathIndex >= movePath.size())
 	{
 		ResetPath();
-		return;
+		return true;
 	}
 
 	// A*가 반환한 현재 타일 좌표
@@ -111,16 +117,23 @@ void Enemy::FollowPath(float deltaTime)
 	if (difference == 0.f)
 	{
 		// 이미 도착했다면 반환
-		return;
+		++currentPathIndex;
+
+		return true;
 	}
 
 
 	const Craft::Vector2F direction = difference.Normalize();
 
+	flipX = direction.x > 0 ? true : false;
+
 	// 거리 비교를 위해계산을 위한 제곱
 	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
 
-	const Craft::Vector2F movement(direction.x * enemyMoveSpeed * 2 * deltaTime, direction.y * enemyMoveSpeed * deltaTime);
+	const float distance = std::sqrt(adjustedDistanceSquared);
+
+	const float ratio = (std::min)(1.f, enemyMoveSpeed * 2.f * deltaTime / distance);
+	const Craft::Vector2F movement = difference * ratio;
 
 	const float adjustedMovementSquared = Craft::GetDistanceSquared(movement);
 
@@ -132,7 +145,7 @@ void Enemy::FollowPath(float deltaTime)
 			++currentPathIndex;
 		}
 
-		return;
+		return true;
 	}
 
 	const Craft::Vector2F newPosition = GetPosition() + movement;
@@ -145,6 +158,7 @@ void Enemy::FollowPath(float deltaTime)
 	{
 		ResetPath();
 	}
+	return false;
 }
 
 bool Enemy::FindPathTo(const Craft::Vector2F& destination)
@@ -168,10 +182,10 @@ bool Enemy::FindPathTo(const Craft::Vector2F& destination)
 
 	movePath = map->FindPath(GetPosition(), destination, static_cast<float>(GetWidth()), static_cast<float>(GetHeight()));
 
-	return true;
+	return !movePath.empty();
 }
 
-bool Enemy::FindRandomPatrolPoint(Craft::Vector2F& randPosition, const float& patrolRadius)
+bool Enemy::FindRandomPatrolPoint(Craft::Vector2F& position, const float& patrolRadius)
 {
 	auto map = tileMap.lock();
 	if (!map)
@@ -179,19 +193,19 @@ bool Enemy::FindRandomPatrolPoint(Craft::Vector2F& randPosition, const float& pa
 		return false;
 	}
 	
-	Craft::Vector2F newRandomPosition = randPosition;
+	Craft::Vector2F newRandomPosition = Craft::Vector2F::Zero;
 
 	newRandomPosition.x = Utility::RandomRange(-patrolRadius * 2, patrolRadius * 2);
 	newRandomPosition.y = Utility::RandomRange(-patrolRadius, patrolRadius);
 	
 	// 새로운 랜덤 좌표에 액터가 들어갈수 없으면 반환
-	if (!map->CanOccupyWorld(GetBoundsAt(newRandomPosition)))
+	if (!map->CanOccupyWorld(GetBoundsAt(position + newRandomPosition)))
 	{	
 		return false;
 	}
 
 	// 들어갈 수 있다면 새로운 위치로 갱신
-	randPosition = newRandomPosition;
+	position = position + newRandomPosition;
 	return true;
 }
 
@@ -248,6 +262,7 @@ void Enemy::ResetPath()
 	// 길 저장해있는거 초기화
 	movePath.clear();
 	currentPathIndex = 0;
+	enemyWaitTimer.Reset();
 }
 
 void Enemy::InitEnemy()

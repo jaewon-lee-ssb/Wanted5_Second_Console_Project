@@ -190,7 +190,7 @@ namespace Craft
 			startWorldPosition.y + actorHeight * 0.5f
 		};
 
-		if (CanOccupyWorld(startBounds))
+		if (!CanOccupyWorld(startBounds))
 		{
 			return {};
 		}

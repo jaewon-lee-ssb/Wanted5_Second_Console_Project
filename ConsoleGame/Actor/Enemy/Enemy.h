@@ -46,7 +46,7 @@ protected:
 	bool CheckDead();
 
 	// 길 따라가는 함수
-	void FollowPath(float deltaTime);
+	bool FollowPath(float deltaTime);
 
 	// 길 찾기 함수
 	bool FindPathTo(const Craft::Vector2F& destination);

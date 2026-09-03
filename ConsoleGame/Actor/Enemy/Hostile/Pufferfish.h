@@ -6,8 +6,8 @@ class Pufferfish : public Enemy
 {
 	TYPE_DECLARATIONS(Pufferfish, Enemy)
 
-	inline static constexpr float CollisionWidth = 16.f;
-	inline static constexpr float CollisionHeight = 8.f;
+	inline static constexpr float CollisionWidth = 24.f;
+	inline static constexpr float CollisionHeight = 12.f;
 
 public:
 	Pufferfish(const Craft::Vector2F& position);
@@ -29,7 +29,12 @@ protected:
 	void UpdateDead(float deltaTime) ;
 
 private:
+	virtual void InitEnemy() override;
 
+private:
+	Utility::Timer chaseTimer;
+
+	int findTargetCount = 0;
 
 	// 이미지 파일이름
 	const std::string enemyPatrolFilename = "Actors/Enemy/pufferfish_attack.txt";
