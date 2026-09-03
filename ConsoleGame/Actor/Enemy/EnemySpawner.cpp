@@ -1,6 +1,6 @@
 ﻿#include <Actor/Enemy/EnemySpawner.h>
 
-#include <Actor/Enemy/NonHostile/MiniFish.h>
+#include <Actor/Enemy/Hostile/Pufferfish.h>
 
 #include <World/TileMap.h>
 #include <Level/Level.h>
@@ -52,7 +52,7 @@ void EnemySpawner::SpawnEnemy()
 	{
 		const Craft::Vector2F spawnPoint(Utility::RandomRange(0.f, mapWidth), Utility::RandomRange(0.f, mapHeight));
 
-		const Craft::Bounds spawnBounds = MiniFish::GetSpawnBounds(spawnPoint);
+		const Craft::Bounds spawnBounds = Pufferfish::GetSpawnBounds(spawnPoint);
 
 		if (!map->CanOccupyWorld(spawnBounds))
 		{
@@ -60,7 +60,7 @@ void EnemySpawner::SpawnEnemy()
 			continue;
 		}
 
-		auto enemy = GetOwner()->SpawnActor<MiniFish>(spawnPoint);
+		auto enemy = GetOwner()->SpawnActor<Pufferfish>(spawnPoint);
 		enemy->SetTileMap(map);
 
 		++curEnemyCount;

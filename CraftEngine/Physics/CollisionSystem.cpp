@@ -11,10 +11,33 @@ namespace Craft
 		// 충돌한 액터에 이벤트를 전달하기 위한 배열.
 		std::vector<CollisionPair> collidedActorList;
 
-		
+		for (size_t ix = 0; ix < actorList.size(); ++ix)
+		{
+			const auto& left = actorList[ix];
+			if (!left || !left->IsActive())
+			{
+				continue;
+			}
 
-		
+			for (size_t jx = ix + 1; jx < actorList.size(); ++jx)
+			{
+				const auto& right = actorList[jx];
+				if (!right || !right->IsActive())
+				{
+					continue;
+				}
 
+				if (!CanCollide(left, right))
+				{
+					continue;
+				}
+
+				if (TestAABB(left, right))
+				{
+					collidedActorList.push_back({ left, right });
+				}
+			}
+		}
 
 		// 충돌 발생한 액터 목록 확인. 충돌한 액터가 없으면 함수 반환.
 		if (collidedActorList.empty())

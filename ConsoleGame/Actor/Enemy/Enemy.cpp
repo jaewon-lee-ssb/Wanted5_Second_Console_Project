@@ -1,5 +1,6 @@
 ﻿#include <Actor/Enemy/Enemy.h>
 #include <Actor/Player/Player.h>
+#include <Collision/GameCollisionLayers.h>
 
 #include <Level/Level.h>
 #include <World/TileMap.h>
@@ -14,6 +15,9 @@ Enemy::Enemy(const Craft::Vector2F& position)
 	enemySpriteAnimation.resize(static_cast<int>(EnemyState::Count));
 
 	animationTimer.SetTargetTime(animationFrameTime);
+
+	SetCollisionLayer(GameCollision::Enemy);
+	SetCollisionMask(GameCollision::PlayerAttack);
 
 	InitEnemy();
 }
@@ -30,6 +34,23 @@ void Enemy::Tick(float deltaTime)
 	UpdateState(deltaTime);
 
 	UpdateAnimation(deltaTime);
+}
+
+void Enemy::OnCollision(const std::shared_ptr<Craft::Actor>& other)
+{
+	super::OnCollision(other);
+
+	if (!other)
+	{
+		return;
+	}
+
+	if ((other->GetCollisionLayer() & GameCollision::PlayerAttack) == 0)
+	{
+		return;
+	}
+
+	isDamaged = true;
 }
 
 void Enemy::UpdateState(float deltaTime)

@@ -25,7 +25,7 @@ private:
 
 private:
 	// 스폰 쿨타임
-	float spawnInterval = 5.f;
+	float spawnInterval = 0.2f;
 	float spawnTimer = 0.f;
 
 	float mapWidth = 0.f;

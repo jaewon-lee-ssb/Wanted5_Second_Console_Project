@@ -88,7 +88,7 @@ void Pufferfish::UpdatePatrol(float deltaTime)
 			return;
 		}
 
-		Craft::Vector2F randPosition = Craft::Vector2F::Zero;
+		Craft::Vector2F randPosition = GetPosition();
 		if (FindRandomPatrolPoint(randPosition, patrolRadius))
 		{
 			// 랜덤 위치 찾을때 이미 검증을 하므로 검증 안해도됨
@@ -247,7 +247,7 @@ void Pufferfish::InitEnemy()
 	detectRadius = 150.f;
 
 	// 패트롤 범위
-	patrolRadius = 150.f;
+	patrolRadius = 50.f;
 
 	// 다시 패트롤하는 쿨타임 랜덤설정할거임
 	patrolRetryInterval = 0.5f;

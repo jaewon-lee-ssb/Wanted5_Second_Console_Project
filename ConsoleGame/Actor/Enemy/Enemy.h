@@ -30,6 +30,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
+	virtual void OnCollision(const std::shared_ptr<Craft::Actor>& other) override;
 
 	// 현재 상태따라 업데이트 상태 불러줌
 	virtual void UpdateState(float deltaTime);

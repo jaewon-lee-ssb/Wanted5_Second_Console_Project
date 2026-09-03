@@ -32,12 +32,9 @@ void GameLevel::OnInitialized()
 		GetCamera()->SetMapSize(Craft::Vector2F(map->GetWidth(), map->GetHeight()));
 	}
 
-	/*auto enemySpawner = SpawnActor<EnemySpawner>();
-	enemySpawner->SetTileMap(map);*/
-
-	auto enemy = SpawnActor<Pufferfish>(Craft::Vector2F(100.f, 50.f));
-	enemy->SetTileMap(map);
-
+	auto enemySpawner = SpawnActor<EnemySpawner>();
+	enemySpawner->SetTileMap(map);
+	
 }
 
 void GameLevel::BeginPlay()

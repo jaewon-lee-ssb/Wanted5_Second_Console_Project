@@ -110,7 +110,7 @@ Harpoon::Harpoon(const Craft::Vector2F& start, const Craft::Vector2F& mousePosit
 	: Actor(CreateHarpoonImage(start, mousePosition, attackRadius), GetHarpoonCenter(start, mousePosition, attackRadius), Utility::ActorTags::PlayerAttackBox)
 {
 	SetCollisionLayer(GameCollision::PlayerAttack);
-
+	SetCollisionMask(GameCollision::Enemy);
 }
 
 void Harpoon::Tick(float deltaTime)
