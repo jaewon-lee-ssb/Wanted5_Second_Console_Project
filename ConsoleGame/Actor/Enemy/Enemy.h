@@ -41,7 +41,7 @@ protected:
 	void UpdateAnimation(float deltaTime);
 
 	// 상태 변화 함수
-	void ChangeEnemyState(const EnemyState& state) { curState = state; }
+	void ChangeEnemyState(const EnemyState& state);
 
 	// 타겟과의 거리
 	bool DetectTarget() const;

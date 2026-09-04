@@ -1,6 +1,7 @@
 ﻿#include <Actor/Enemy/EnemySpawner.h>
 
 #include <Actor/Enemy/Hostile/Pufferfish.h>
+#include <Actor/Enemy/NonHostile/MiniFish.h>
 
 #include <World/TileMap.h>
 #include <Level/Level.h>
@@ -47,12 +48,24 @@ void EnemySpawner::SpawnEnemy()
 	}
 
 	constexpr int maxAttempts = 10;
+	
+	//const float enemySpawnIndex = Utility::RandomRange(0.f, 10.f);
+	const float enemySpawnIndex = 5.f;
 
 	for (int attempt = 0; attempt < maxAttempts; ++attempt)
 	{
 		const Craft::Vector2F spawnPoint(Utility::RandomRange(0.f, mapWidth), Utility::RandomRange(0.f, mapHeight));
 
-		const Craft::Bounds spawnBounds = Pufferfish::GetSpawnBounds(spawnPoint);
+		Craft::Bounds spawnBounds; 
+		
+		if (enemySpawnIndex < 7.f)
+		{
+			spawnBounds = Pufferfish::GetSpawnBounds(spawnPoint);
+		}
+		else
+		{
+			spawnBounds = MiniFish::GetSpawnBounds(spawnPoint);
+		}
 
 		if (!map->CanOccupyWorld(spawnBounds))
 		{
@@ -60,8 +73,18 @@ void EnemySpawner::SpawnEnemy()
 			continue;
 		}
 
-		auto enemy = GetOwner()->SpawnActor<Pufferfish>(spawnPoint);
-		enemy->SetTileMap(map);
+		if (enemySpawnIndex < 7.f)
+		{
+			auto enemy = GetOwner()->SpawnActor<MiniFish>(spawnPoint);
+			enemy->SetTileMap(map);
+		}
+		else
+		{
+			auto enemy = GetOwner()->SpawnActor<Pufferfish>(spawnPoint);
+			enemy->SetTileMap(map);
+		}
+
+		
 
 		++curEnemyCount;
 		return;

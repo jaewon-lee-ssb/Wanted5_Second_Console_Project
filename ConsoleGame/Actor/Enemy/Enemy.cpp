@@ -25,10 +25,17 @@ Enemy::Enemy(const Craft::Vector2F& position)
 void Enemy::TakeDamage(float damage)
 {
 	Hp -= damage;
+
+	ChangeEnemyState(EnemyState::Damaged);
+	enemyWaitTimer.SetTargetTime(0.2f * enemySpriteAnimation[static_cast<int>(curState)].size());
+	enemyWaitTimer.Reset();
+
 	if (Hp <= 0.f)
 	{
 		Hp = 0.f;
 		ChangeEnemyState(EnemyState::Dead);
+		enemyWaitTimer.SetTargetTime(0.2f * enemySpriteAnimation[static_cast<int>(curState)].size());
+		enemyWaitTimer.Reset();
 	}
 }
 
@@ -94,6 +101,19 @@ void Enemy::UpdateAnimation(float deltaTime)
 		
 		animationTimer.Reset();
 	}
+}
+
+void Enemy::ChangeEnemyState(const EnemyState& state)
+{
+	if (curState == state)
+	{
+		return;
+	}
+
+	curState = state;
+	ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][0]);
+	currentAnimationSpriteIndex = 0;
+	animationTimer.Reset();
 }
 
 bool Enemy::DetectTarget() const

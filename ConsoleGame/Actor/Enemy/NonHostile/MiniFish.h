@@ -23,6 +23,7 @@ protected:
 
 	void UpdatePatrol(float deltaTime);
 	void UpdateFlee(float deltaTime);
+	void UpdateDamaged(float deltaTime);
 	void UpdateReturn(float deltaTime);
 	void UpdateDead(float deltaTime);
 
@@ -33,8 +34,11 @@ private:
 
 private:
 
-
 	// 이미지 파일이름
 	const std::string enemyPatrolFilename = "Actors/Enemy/minifish_patrol.txt";
+	const std::string enemyDamagedFilename = "Actors/Enemy/minifish_damaged.txt";
+	const std::string enemyFleeFilename = "Actors/Enemy/minifish_flee.txt";
+	const std::string enemyDeadFilename = "Actors/Enemy/minifish_dead.txt";
+
 };
 

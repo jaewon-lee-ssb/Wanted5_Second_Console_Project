@@ -70,6 +70,7 @@ void Player::Tick(float deltaTime)
 	}
 
 
+	// 공격직후 멈추는 타이머
 	if (!attackLockTimer.IsTimeOut())
 	{
 		isAiming = false;

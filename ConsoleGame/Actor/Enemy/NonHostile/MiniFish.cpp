@@ -10,6 +10,10 @@ MiniFish::MiniFish(const Craft::Vector2F& position)
 {
 	curState = EnemyState::Patrol;
 	enemySpriteAnimation[static_cast<int>(EnemyState::Patrol)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Return)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Damaged)] = Craft::TextImageLoader::LoadAnimation(enemyDamagedFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Flee)] = Craft::TextImageLoader::LoadAnimation(enemyFleeFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Dead)] = Craft::TextImageLoader::LoadAnimation(enemyDeadFilename);
 
 	ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][0]);
 
@@ -34,9 +38,6 @@ void MiniFish::BeginPlay()
 void MiniFish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
-	
-	enemyWaitTimer.Tick(deltaTime);
-
 
 	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
 	if ((curState == EnemyState::Patrol || curState == EnemyState::Return) && DetectTarget())
@@ -66,6 +67,9 @@ void MiniFish::UpdateState(float deltaTime)
 		break;
 	case EnemyState::Flee:
 		UpdateFlee(deltaTime);
+		break;
+	case EnemyState::Damaged:
+		UpdateDamaged(deltaTime);
 		break;
 	case EnemyState::Return:
 		UpdateReturn(deltaTime);
@@ -134,14 +138,26 @@ void MiniFish::UpdateFlee(float deltaTime)
 	MoveWithTileCollision(movement);
 }
 
+void MiniFish::UpdateDamaged(float deltaTime)
+{
+	if (enemyWaitTimer.IsTimeOut())
+	{
+		// 피격 애니메이션이 끝나면 도망상태로 
+		ChangeEnemyState(EnemyState::Flee);
+	}
+}
+
 void MiniFish::UpdateReturn(float deltaTime)
 {
 
-	if (movePath.empty() && enemyWaitTimer.IsTimeOut())
+	if (movePath.empty())
 	{
-		if(FindReturnPath())
+		if (enemyWaitTimer.IsTimeOut())
 		{
-			enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+			if (FindReturnPath())
+			{
+				enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
+			}
 		}
 	}
 	else
@@ -172,7 +188,11 @@ void MiniFish::UpdateDead(float deltaTime)
 {
 	// 체크함수는 충돌체크 함수에다가 넣어주면 될거같다.
 	
-	Destroy();
+
+	if (enemyWaitTimer.IsTimeOut())
+	{
+		Destroy();
+	}
 
 }
 
@@ -189,7 +209,7 @@ void MiniFish::InitEnemy()
 	isDead = false;
 
 	// 감지 범위
-	detectRadius = 30.f;
+	detectRadius = 100.f;
 
 	// 패트롤 범위
 	patrolRadius = 60.f;
@@ -198,7 +218,7 @@ void MiniFish::InitEnemy()
 	patrolRetryInterval = 0.5f;
 
 	// 이 거리가 넘으면 도망 종료
-	fleeEndDistance = 70.f;
+	fleeEndDistance = 300.f;
 
 	enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 }

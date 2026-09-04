@@ -6,6 +6,7 @@ enum class EnemyState
 	Chase,
 	Attack,
 	Flee,
+	Damaged,
 	Return,
 	Dead,
 	Count
