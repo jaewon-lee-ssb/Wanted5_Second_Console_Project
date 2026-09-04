@@ -115,6 +115,7 @@ protected:
 	
 	// 현재 상태
 	EnemyState curState = EnemyState::Patrol;
+	EnemyState prevState = EnemyState::Patrol;
 
 	// 적 애니메이션
 	std::vector<std::vector<Craft::PixelImage>> enemySpriteAnimation;

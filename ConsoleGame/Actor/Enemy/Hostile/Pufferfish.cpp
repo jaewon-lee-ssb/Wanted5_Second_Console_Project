@@ -9,6 +9,12 @@ Pufferfish::Pufferfish(const Craft::Vector2F& position)
 {
 	curState = EnemyState::Patrol;
 	enemySpriteAnimation[static_cast<int>(EnemyState::Patrol)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Chase)] = Craft::TextImageLoader::LoadAnimation(enemyChaseFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Attack)] = Craft::TextImageLoader::LoadAnimation(enemyAttackFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Damaged)] = Craft::TextImageLoader::LoadAnimation(enemyDamagedFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Flee)] = Craft::TextImageLoader::LoadAnimation(enemyFleeFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Return)] = Craft::TextImageLoader::LoadAnimation(enemyPatrolFilename);
+	enemySpriteAnimation[static_cast<int>(EnemyState::Dead)] = Craft::TextImageLoader::LoadAnimation(enemyDeadFilename);
 
 	ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][0]);
 
@@ -63,6 +69,9 @@ void Pufferfish::UpdateState(float deltaTime)
 		break;
 	case EnemyState::Chase:
 		UpdateChase(deltaTime);
+		break;
+	case EnemyState::Damaged:
+		UpdateDamaged(deltaTime);
 		break;
 	case EnemyState::Attack:
 		UpdateAttack(deltaTime);
@@ -150,6 +159,16 @@ void Pufferfish::UpdateChase(float deltaTime)
 void Pufferfish::UpdateAttack(float deltaTime)
 {
 	// 공격
+}
+
+void Pufferfish::UpdateDamaged(float deltaTime)
+{
+	
+	if (enemyWaitTimer.IsTimeOut())
+	{
+		// 피격 애니메이션이 끝나면 도망상태로 
+		ChangeEnemyState(prevState);
+	}
 }
 
 void Pufferfish::UpdateFlee(float deltaTime)

@@ -109,7 +109,7 @@ void Enemy::ChangeEnemyState(const EnemyState& state)
 	{
 		return;
 	}
-
+	prevState = curState;
 	curState = state;
 	ChangeImage(enemySpriteAnimation[static_cast<int>(curState)][0]);
 	currentAnimationSpriteIndex = 0;

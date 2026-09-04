@@ -104,6 +104,8 @@ void MiniFish::UpdatePatrol(float deltaTime)
 
 void MiniFish::UpdateFlee(float deltaTime)
 {
+	ResetPath();
+
 	auto target = targetPtr.lock();
 	auto map = tileMap.lock();
 
@@ -188,6 +190,7 @@ void MiniFish::UpdateDead(float deltaTime)
 {
 	// 체크함수는 충돌체크 함수에다가 넣어주면 될거같다.
 	
+	ResetPath();
 
 	if (enemyWaitTimer.IsTimeOut())
 	{
