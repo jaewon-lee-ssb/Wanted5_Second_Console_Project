@@ -36,6 +36,9 @@ private:
 	// 플레이어 이동관련
 	float playerMoveSpeedX = 100.f;
 	float playerMoveSpeedY = 50.f;
+
+	// 작살 공격력
+	float harpoonDamage = 10.f;
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 

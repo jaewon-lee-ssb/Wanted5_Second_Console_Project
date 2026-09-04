@@ -1,8 +1,8 @@
 ﻿#include <Level/Level.h>
 #include <Camera/Camera.h>
 
-#include <Utility/ActorTags.h>
-#include <Utility/CollisionContext.h>
+#include <Physics/CollisionSystem.h>
+
 
 namespace Craft
 {
@@ -68,6 +68,11 @@ namespace Craft
 		}
 	}
 
+	bool Level::RaycastSegment(const Vector2F& start, const Vector2F& end, CollisionLayer targetMask, RaycastHit& outHit) const
+	{
+		return CollisionSystem::RaycastSegment(start, end, targetMask, actorList, outHit);
+	}
+
 	void Level::ProcessAddAndDestroyActors()
 	{
 		if (HasInitialized())
@@ -98,35 +103,6 @@ namespace Craft
 		for (const std::shared_ptr<Actor>& actor : addRequestedActorList)
 		{
 			actorList.emplace_back(actor);
-			if (actor->GetActorTag() == Utility::ActorTags::Player)
-			{
-				player = actor;
-			}
-			if (actor->GetActorTag() == Utility::ActorTags::Enemy)
-			{
-				enemyList.emplace_back(actor);
-			}
-			if (actor->GetActorTag() == Utility::ActorTags::Item)
-			{
-				itemList.emplace_back(actor);
-			}
-			if (actor->GetActorTag() == Utility::ActorTags::EnemyAttackBox)
-			{
-				enemyAttackList.emplace_back(actor);
-			}
-			if (actor->GetActorTag() == Utility::ActorTags::PlayerAttackBox)
-			{
-				playerAttackList.emplace_back(actor);
-			}
-			if (actor->GetActorTag() == Utility::ActorTags::WaterBomb)
-			{
-				bombList.emplace_back(actor);
-			}
-			if (actor->GetActorTag() == Utility::ActorTags::Trigger)
-			{
-				triggerList.emplace_back(actor);
-			}
-
 			
 		}
 

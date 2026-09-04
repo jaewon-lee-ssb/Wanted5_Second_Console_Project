@@ -106,8 +106,9 @@ namespace
 	}
 }
 
-Harpoon::Harpoon(const Craft::Vector2F& start, const Craft::Vector2F& mousePosition)
+Harpoon::Harpoon(const Craft::Vector2F& start, const Craft::Vector2F& mousePosition, float damage)
 	: Actor(CreateHarpoonImage(start, mousePosition, attackRadius), GetHarpoonCenter(start, mousePosition, attackRadius), Utility::ActorTags::PlayerAttackBox)
+	, segmentStart(start), segmentEnd(GetHarpoonTargetPosition(start, mousePosition, attackRadius)), damage(damage)
 {
 	SetCollisionLayer(GameCollision::PlayerAttack);
 	SetCollisionMask(GameCollision::Enemy);

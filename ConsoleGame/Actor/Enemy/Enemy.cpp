@@ -22,6 +22,16 @@ Enemy::Enemy(const Craft::Vector2F& position)
 	InitEnemy();
 }
 
+void Enemy::TakeDamage(float damage)
+{
+	Hp -= damage;
+	if (Hp <= 0.f)
+	{
+		Hp = 0.f;
+		ChangeEnemyState(EnemyState::Dead);
+	}
+}
+
 void Enemy::BeginPlay()
 {
 	targetPtr = GetOwner()->FindActor<Player>();
@@ -50,6 +60,8 @@ void Enemy::OnCollision(const std::shared_ptr<Craft::Actor>& other)
 		return;
 	}
 
+	// 충돌체크
+	
 	isDamaged = true;
 }
 

@@ -24,6 +24,8 @@ public:
 
 	void SetMoveSpeed(float moveSpeed) { enemyMoveSpeed = moveSpeed; }
 
+	void TakeDamage(float damage);
+
 	// Getter/Setter
 	inline bool IsDead() const { return isDead; }
 

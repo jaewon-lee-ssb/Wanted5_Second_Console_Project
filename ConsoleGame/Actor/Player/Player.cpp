@@ -1,15 +1,14 @@
 ﻿#include <Actor/Player/Player.h>
 
 #include <Actor/Player/Harpoon.h>
+#include <Actor/Enemy/Enemy.h>
 
 #include <Input/Input.h>
 #include <Math/Vector2.h>
 #include <Level/Level.h>
 #include <Camera/Camera.h>
 #include <Resource/TextImageLoader.h>
-
 #include <Collision/GameCollisionLayers.h>
-
 #include <World/TileMap.h>
 
 #include <Windows.h>
@@ -117,7 +116,19 @@ void Player::Tick(float deltaTime)
 			mousePosition.y = attackPosition.y + tempPosition.y;
 		}
 
-		GetOwner()->SpawnActor<Harpoon>(attackPosition, mousePosition);
+		auto harpoon = GetOwner()->SpawnActor<Harpoon>(attackPosition, mousePosition, harpoonDamage);
+
+		Craft::RaycastHit hit;
+
+		if (GetOwner()->RaycastSegment(harpoon->GetSegmentStart(), harpoon->GetSegmentEnd(), GameCollision::Enemy, hit))
+		{
+			auto enemy = Cast<Enemy>(hit.actor);
+
+			if (enemy)
+			{
+				enemy->TakeDamage(harpoon->GetDamage());
+			}
+		}
 	}
 
 	Move(deltaTime);

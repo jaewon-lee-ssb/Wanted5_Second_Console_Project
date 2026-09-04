@@ -4,7 +4,6 @@
 #include <Render/Renderer.h>
 #include <Utility/Random.h>
 #include <Physics/CollisionSystem.h>
-#include <Utility/CollisionContext.h>
 #include <UIManager/UIManager.h>
 
 
@@ -241,18 +240,8 @@ namespace Craft
 
 		}
 
-		Utility::CollisionContext collisionContext;
-		collisionContext.player = mainLevel->player;
-		collisionContext.enemyList = mainLevel->enemyList;
-		collisionContext.itemList = mainLevel->itemList;
-		collisionContext.playerAttackList = mainLevel->playerAttackList;
-		collisionContext.enemyAttackList = mainLevel->enemyAttackList;
-		collisionContext.bombList = mainLevel->bombList;
-		collisionContext.triggerList = mainLevel->triggerList;
-
-
 		// 레벨의 액터 목록을 충돌 시스템에 전달해 처리 진행.
-		collisionSystem->ProcessCollision(collisionContext, mainLevel->actorList);
+		collisionSystem->ProcessCollision(mainLevel->actorList);
 	}
 
 	void Engine::SavePreviousInputStates()

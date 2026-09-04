@@ -3,6 +3,9 @@
 #include <Core/Core.h>
 #include <Actor/Actor.h>
 
+#include <Physics/CollisionLayer.h>
+#include <Physics/RaycastHit.h>
+
 #include <vector>
 #include <memory>
 #include <cmath>
@@ -110,6 +113,9 @@ namespace Craft
 
 			return nullptr;
 		}
+		
+		bool RaycastSegment(const Vector2F& start, const Vector2F& end, CollisionLayer targetMask, RaycastHit& outHit) const;
+
 
 		// Getter
 		inline bool HasInitialized() const { return hasInitialized; }
