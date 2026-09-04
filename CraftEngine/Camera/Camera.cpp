@@ -8,7 +8,6 @@ namespace Craft
 {
 	Camera::Camera()
 	{
-		offset = Vector2F((Engine::Get().GetWidth() / 2.f), (Engine::Get().GetHeight() / 2.f));
 	}
 
 	void Camera::SetTarget(const std::shared_ptr<Actor>& target)
@@ -18,15 +17,17 @@ namespace Craft
 
 	Vector2F Camera::WorldToScreen(const Vector2F& world) const
 	{
-		// 월드 에서 카메라를 뺴주면 화면 좌표가 나옴
-		return world - position;
+		return (world - position) * zoom;
 	}
 
 	Vector2F Camera::ScreenToWorld(const Vector2F& screen) const
 	{
-		// 화면 = 월드 - 카메라니까
-		// 화면 + 카메라 = 월드
-		return screen + position;
+		return screen * (1.f / zoom) + position;
+	}
+
+	void Camera::SetZoom(float newZoom)
+	{
+		zoom = (std::max)(0.1f, newZoom);
 	}
 
 	void Camera::Tick(float deltaTime)
@@ -34,10 +35,17 @@ namespace Craft
 		// 타겟을 따라다니도록 타겟의 위치를 업데이트
 		if (auto player = target.lock())
 		{
-			Vector2F newPosition = player->GetPosition() - offset;
+			// 확대할수록 화면에 보이는 월드 범위가 줄어든다.
+			const Vector2F visibleWorldSize(
+				Engine::Get().GetWidth() / zoom,
+				Engine::Get().GetHeight() / zoom);
+			const Vector2F cameraOffset = visibleWorldSize * 0.5f;
+			const Vector2F newPosition = player->GetPosition() - cameraOffset;
+			const float maxCameraX = (std::max)(0.f, mapSize.x - visibleWorldSize.x);
+			const float maxCameraY = (std::max)(0.f, mapSize.y - visibleWorldSize.y);
 		
-			position.x = (std::clamp)(newPosition.x, 0.f, mapSize.x - Engine::Get().GetWidth());
-			position.y = (std::clamp)(newPosition.y, 0.f, mapSize.y - Engine::Get().GetHeight());
+			position.x = (std::clamp)(newPosition.x, 0.f, maxCameraX);
+			position.y = (std::clamp)(newPosition.y, 0.f, maxCameraY);
 		}
 	}
 }

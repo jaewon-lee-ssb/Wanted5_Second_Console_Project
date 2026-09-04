@@ -41,6 +41,9 @@ namespace Craft
 			// 그리기 정렬 순서. 값이 크면 우선순위가 높음.
 			int sortingOrder = -1;
 
+			// 원본 이미지 한 픽셀을 화면에 확대해서 그릴 배율.
+			float scale = 1.f;
+
 			RenderSpace renderSpace = RenderSpace::World;
 		};
 
@@ -66,7 +69,7 @@ namespace Craft
 		~Renderer();
 
 		// 장면을 구성하는 모든 객체(액터)가 화면에 그릴 데이터를 전달하는 함수.
-		void SubmitWorld(const PixelImage& image, const Vector2F& position, bool flipX = false, const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, RenderSpace renderSpace = RenderSpace::World);
+		void SubmitWorld(const PixelImage& image, const Vector2F& position, bool flipX = false, const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 0, float scale = 1.f, RenderSpace renderSpace = RenderSpace::World);
 		
 		void SubmitUI(const PixelImage& image, const Vector2F& position, const Vector2F& pivot = Vector2F::Zero, int sortingOrder = 10000, RenderSpace renderSpace = RenderSpace::Screen);
 		

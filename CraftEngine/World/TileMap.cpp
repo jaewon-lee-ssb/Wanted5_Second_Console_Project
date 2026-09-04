@@ -271,7 +271,8 @@ namespace Craft
 				screenPosition,
 				false,
 				Vector2F::Zero,
-				sortingOrder);
+				sortingOrder,
+				owner->GetCamera()->GetZoom());
 		}
 
 		// 매 프레임 적들이 현재 경로를 다시 등록하도록 큐를 비운다.

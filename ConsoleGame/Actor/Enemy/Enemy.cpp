@@ -40,10 +40,20 @@ void Enemy::BeginPlay()
 void Enemy::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
+	float newDeltaTime = deltaTime;
 
-	UpdateState(deltaTime);
+	if (auto target = targetPtr.lock())
+	{
+		if (auto player = Cast<Player>(target))
+		{
+			newDeltaTime = deltaTime * (player->GetIsAiming() ? 0.25f : 1.f);
+		}
+		
+	}
 
-	UpdateAnimation(deltaTime);
+	UpdateState(newDeltaTime);
+
+	UpdateAnimation(newDeltaTime);
 }
 
 void Enemy::OnCollision(const std::shared_ptr<Craft::Actor>& other)

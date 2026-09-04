@@ -16,7 +16,7 @@ class Enemy : public Craft::Actor
 	TYPE_DECLARATIONS(Enemy, Actor)
 
 public:
-	Enemy(const Craft::Vector2F& position);
+	Enemy(const Craft::Vector2F& position);  
 	~Enemy() = default;
 
 	// 타일맵 지정함수

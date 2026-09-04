@@ -23,6 +23,8 @@ namespace Craft
 		inline const Vector2F GetPosition() const { return position; }
 		inline void SetPosition(const Vector2F& newPosition) { position = newPosition; }
 		inline void SetMapSize(const Vector2F& newMapSize) { mapSize = newMapSize; }
+		inline float GetZoom() const { return zoom; }
+		void SetZoom(float newZoom);
 
 		virtual void Tick(float deltaTime);
 
@@ -31,9 +33,10 @@ namespace Craft
 		
 		std::weak_ptr<Actor> target;
 
-		Vector2F offset;
-
 		Vector2F mapSize = Vector2F::Zero;
+
+		// 월드 화면 확대 배율. UI와 충돌 좌표에는 적용하지 않는다.
+		float zoom = 1.f;
 		
 	};
 

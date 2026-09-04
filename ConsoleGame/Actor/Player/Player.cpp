@@ -31,6 +31,10 @@ Player::Player(const Vector2F& position)
 	currentStateIndex = static_cast<int>(PlayerState::Idle);
 	ChangeImage(playerSpriteAnimation[currentStateIndex][0]);
 
+	animationTimer.SetTargetTime(animationFrameTime);
+	attackCooldownTimer.SetTargetTime(3.f);
+	attackLockTimer.SetTargetTime(0.5f);
+
 	// 0 - 왼쪽
 	playerAttackPoint[0] = Vector2F(GetPosition().x - GetPivot().x, GetPosition().y);
 	// 1 - 오른쪽
@@ -44,11 +48,15 @@ void Player::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	animationElapsedTime += deltaTime;
+	animationTimer.Tick(deltaTime);
+	attackCooldownTimer.Tick(deltaTime);
+	attackLockTimer.Tick(deltaTime);
 
-	if (!playerSpriteAnimation[currentStateIndex].empty() && animationElapsedTime >= animationFrameTime)
+
+
+	if (!playerSpriteAnimation[currentStateIndex].empty() && animationTimer.IsTimeOut())
 	{
-		animationElapsedTime -= animationFrameTime;
+		animationTimer.Reset();
 
 		currentAnimationSpriteIndex = (currentAnimationSpriteIndex + 1) % playerSpriteAnimation[currentStateIndex].size();
 
@@ -62,42 +70,68 @@ void Player::Tick(float deltaTime)
 	}
 
 
+	if (!attackLockTimer.IsTimeOut())
+	{
+		isAiming = false;
+		GetOwner()->GetCamera()->SetZoom(1.f);
+		return;
+	}
+
+	
+	isAiming = Input::Get().GetKey(VK_RBUTTON);
+
+	if (!attackCooldownTimer.IsTimeOut())
+	{
+		isAiming = false;
+	}
+
+	// 마우스는 직전에 표시된 화면의 카메라 변환으로 월드 좌표를 구한다.
 	Vector2F mousePosition = Input::Get().GetMousePosition();
 
 	mousePosition = GetOwner()->GetCamera()->ScreenToWorld(mousePosition);
 
+	GetOwner()->GetCamera()->SetZoom(isAiming ? 1.5f : 1.f);
 
 	playerMoveDir = Vector2F::Zero;
-	if (Input::Get().GetKey('D'))
+	if (!isAiming)
 	{
-		playerMoveDir.x = 1.0f;
-		flipX = true;
-	}
-	if (Input::Get().GetKey('A'))
-	{
-		playerMoveDir.x = -1.0f;
-		flipX = false;
-	}
-	if (Input::Get().GetKey('W'))
-	{
-		playerMoveDir.y = -1.0f;
-	}
-	if (Input::Get().GetKey('S'))
-	{
-		playerMoveDir.y = 1.0f;
-	}
-	if (std::abs(playerMoveDir.Length()) > 0)
-	{
-		currentStateIndex = static_cast<int>(PlayerState::Swim);
-	}
-	else
-	{
-		currentStateIndex = static_cast<int>(PlayerState::Idle);
+		if (Input::Get().GetKey('D'))
+		{
+			playerMoveDir.x = 1.0f;
+			flipX = true;
+		}
+		if (Input::Get().GetKey('A'))
+		{
+			playerMoveDir.x = -1.0f;
+			flipX = false;
+		}
+		if (Input::Get().GetKey('W'))
+		{
+			playerMoveDir.y = -1.0f;
+		}
+		if (Input::Get().GetKey('S'))
+		{
+			playerMoveDir.y = 1.0f;
+		}
+		if (std::abs(playerMoveDir.Length()) > 0)
+		{
+			currentStateIndex = static_cast<int>(PlayerState::Swim);
+		}
+		else
+		{
+			currentStateIndex = static_cast<int>(PlayerState::Idle);
+		}
 	}
 
+	
 
-	if (Input::Get().GetKeyDown(VK_LBUTTON))
+	if (Input::Get().GetKeyDown(VK_LBUTTON) && isAiming && attackCooldownTimer.IsTimeOut())
 	{
+		attackCooldownTimer.Reset();
+		attackLockTimer.Reset();
+		isAiming = false;
+		GetOwner()->GetCamera()->SetZoom(1.f);
+
 		// 방향 체크해서 공격위치 조정
 		Vector2F attackPosition = mousePosition.x < position.x ? playerAttackPoint[0] : playerAttackPoint[1];
 		flipX = mousePosition.x < position.x ? false : true;

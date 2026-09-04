@@ -3,6 +3,8 @@
 #include <Camera/Camera.h>
 
 #include <cassert>
+#include <algorithm>
+#include <cmath>
 #include <Windows.h>
 #include <iostream>
 #include <vector>
@@ -84,7 +86,7 @@ namespace Craft
 		SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	}
 
-	void Renderer::SubmitWorld(const PixelImage& image, const Vector2F& position, bool flipX, const Vector2F& pivot, int sortingOrder, RenderSpace renderSpace)
+	void Renderer::SubmitWorld(const PixelImage& image, const Vector2F& position, bool flipX, const Vector2F& pivot, int sortingOrder, float scale, RenderSpace renderSpace)
 	{
 		// 그럼 명령 객체 생성.
 		RenderCommand command;
@@ -93,6 +95,7 @@ namespace Craft
 		command.flipX = flipX;
 		command.pivot = pivot;
 		command.sortingOrder = sortingOrder;
+		command.scale = (std::max)(0.1f, scale);
 		command.renderSpace = renderSpace;
 
 		// 렌더 큐에 명령 추가
@@ -158,9 +161,14 @@ namespace Craft
 			// 현재 화면의 크기
 			const Vector2I& drawSize = screenSize;
 
-			// 액터들은 중심을 기준으로 그리기때문에 왼쪽 위 좌표는 현재 좌표에서 피봇을 빼준다.
-			const int startX = static_cast<int>(command.position.x - command.pivot.x);
-			const int startY = static_cast<int>(command.position.y - command.pivot.y);
+			const float scale = command.scale;
+			const float inverseScale = 1.f / scale;
+			const int scaledWidth = (std::max)(1, static_cast<int>(std::ceil(image.width * scale)));
+			const int scaledHeight = (std::max)(1, static_cast<int>(std::ceil(image.height * scale)));
+
+			// 화면 위치뿐 아니라 이미지 크기와 피벗에도 같은 확대율을 적용한다.
+			const int startX = static_cast<int>(std::floor(command.position.x - command.pivot.x * scale));
+			const int startY = static_cast<int>(std::floor(command.position.y - command.pivot.y * scale));
 
 			// 이미지를 그리기 시작할 픽셀위치
 			// 이미지가 왼쪽으로 반 짤려있는 상황이면 보이는 픽셀번호 부터 그리기
@@ -168,8 +176,8 @@ namespace Craft
 			const int localStartY = (std::max)(0, -startY);
 
 			// 마찬가지로 반대쪽으로도 짤린곳을 체크해준다.
-			const int localEndX = (std::min)(image.width, drawSize.x - startX);
-			const int localEndY = (std::min)(image.height, drawSize.y - startY);
+			const int localEndX = (std::min)(scaledWidth, drawSize.x - startX);
+			const int localEndY = (std::min)(scaledHeight, drawSize.y - startY);
 
 
 
@@ -181,11 +189,13 @@ namespace Craft
 
 			for (int localY = localStartY; localY < localEndY; ++localY)
 			{
+				const int sourceY = (std::min)(image.height - 1, static_cast<int>(localY * inverseScale));
 				for (int localX = localStartX; localX < localEndX; ++localX)
 				{
-					const int sourceX = command.flipX ? image.width - 1 - localX : localX;
+					const int unflippedSourceX = (std::min)(image.width - 1, static_cast<int>(localX * inverseScale));
+					const int sourceX = command.flipX ? image.width - 1 - unflippedSourceX : unflippedSourceX;
 
-					const Pixel& pixel = image.pixels[localY * image.width + sourceX];
+					const Pixel& pixel = image.pixels[sourceY * image.width + sourceX];
 
 					// 픽셀이 투명하면 스킵
 					if (pixel.transparent)

@@ -2,6 +2,8 @@
 
 #include <Actor/Actor.h>
 
+#include <Utility/Timer.h>
+
 #include <array>
 
 
@@ -27,9 +29,11 @@ public:
 
 	void SetTileMap(const std::shared_ptr<Craft::TileMap>& newMap) { tileMap = newMap; }
 
-	virtual void Tick(float deltaTime) override;
+	bool GetIsAiming() const { return isAiming; }
 
 private:
+	virtual void Tick(float deltaTime) override;
+
 	void Move(float deltaTime);
 
 private:
@@ -38,13 +42,20 @@ private:
 	float playerMoveSpeedY = 50.f;
 
 	// 작살 공격력
-	float harpoonDamage = 10.f;
+	float harpoonDamage = 50.f;
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 
 	// 플레이어 애니메이션 관련 변수
 	float animationElapsedTime = 0.f;
 	float animationFrameTime = 0.2f;
+
+	bool isAiming = false;
+
+	// 각종 타이머
+	Utility::Timer animationTimer;
+	Utility::Timer attackCooldownTimer;
+	Utility::Timer attackLockTimer;
 
 	int currentAnimationSpriteIndex = 0;
 	int currentStateIndex = 0;

@@ -26,7 +26,7 @@ public:
 private:
 	
 	// 생명시간
-	float remainingLifeTime = 0.1f;
+	float remainingLifeTime = 0.3f;
 
 	float damage = 0.f;
 
