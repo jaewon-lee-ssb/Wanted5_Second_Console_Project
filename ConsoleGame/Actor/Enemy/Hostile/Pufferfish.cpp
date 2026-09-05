@@ -38,8 +38,10 @@ void Pufferfish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	enemyWaitTimer.Tick(deltaTime);
 	chaseTimer.Tick(deltaTime);
+
+
+	//  TODO : 공격 범위 안에 들어왔으면 공격
 
 	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
 	if ((curState == EnemyState::Patrol || curState == EnemyState::Return) && DetectTarget())
@@ -113,7 +115,21 @@ void Pufferfish::UpdatePatrol(float deltaTime)
 
 void Pufferfish::UpdateChase(float deltaTime)
 {
-	bool isMoveEnd = false;
+	// 체력이 적다면
+
+	bool isMoveEnd = false; 
+	bool isLowHp = false;
+
+	if (Hp <= 50.f)
+	{
+		isLowHp = true;
+	}
+
+	// 체력이 적으면 player를 찾아도 도망
+	if (isLowHp)
+	{
+		ChangeEnemyState(EnemyState::Flee);
+	}
 
 	// 이동은 계속 해준다
 	if (!movePath.empty())
@@ -167,7 +183,7 @@ void Pufferfish::UpdateDamaged(float deltaTime)
 	if (enemyWaitTimer.IsTimeOut())
 	{
 		// 피격 애니메이션이 끝나면 도망상태로 
-		ChangeEnemyState(prevState);
+		ChangeEnemyState(EnemyState::Chase);
 	}
 }
 
@@ -247,7 +263,12 @@ void Pufferfish::UpdateReturn(float deltaTime)
 
 void Pufferfish::UpdateDead(float deltaTime)
 {
-	Destroy();
+	ResetPath();
+
+	if (enemyWaitTimer.IsTimeOut())
+	{
+		Destroy();
+	}
 }
 
 void Pufferfish::InitEnemy()
@@ -272,7 +293,7 @@ void Pufferfish::InitEnemy()
 	patrolRetryInterval = 0.5f;
 
 	// 이 거리가 넘으면 도망 종료
-	fleeEndDistance = 70.f;
+	fleeEndDistance = 200.f;
 
 	enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 	chaseTimer.SetTargetTime(0.5f);

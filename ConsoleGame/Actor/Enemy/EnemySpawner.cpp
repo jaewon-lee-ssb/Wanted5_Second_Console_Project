@@ -50,7 +50,7 @@ void EnemySpawner::SpawnEnemy()
 	constexpr int maxAttempts = 10;
 	
 	//const float enemySpawnIndex = Utility::RandomRange(0.f, 10.f);
-	const float enemySpawnIndex = 5.f;
+	const float enemySpawnIndex = 8.f;
 
 	for (int attempt = 0; attempt < maxAttempts; ++attempt)
 	{

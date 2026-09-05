@@ -325,7 +325,6 @@ void Enemy::ResetPath()
 	// 길 저장해있는거 초기화
 	movePath.clear();
 	currentPathIndex = 0;
-	enemyWaitTimer.Reset();
 }
 
 void Enemy::InitEnemy()
