@@ -39,6 +39,9 @@
     <ClCompile Include="Actor\Enemy\Hostile\Pufferfish.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Actor\Enemy\Hostile\EnemyAttackBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Player\Harpoon.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Actor\Enemy\EnemyTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Enemy\Hostile\EnemyAttackBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

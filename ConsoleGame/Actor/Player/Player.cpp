@@ -28,12 +28,15 @@ Player::Player(const Vector2F& position)
 
 	playerSpriteAnimation[static_cast<int>(PlayerState::Swim)] = (TextImageLoader::LoadAnimation(playerSwimFilename));
 
+	playerSpriteAnimation[static_cast<int>(PlayerState::Dead)] = (TextImageLoader::LoadAnimation(playerDeadFilename));
+
 	currentStateIndex = static_cast<int>(PlayerState::Idle);
 	ChangeImage(playerSpriteAnimation[currentStateIndex][0]);
 
 	animationTimer.SetTargetTime(animationFrameTime);
 	attackCooldownTimer.SetTargetTime(3.f);
 	attackLockTimer.SetTargetTime(0.5f);
+	damagedTimer.SetTargetTime(3.f);
 
 	// 0 - 왼쪽
 	playerAttackPoint[0] = Vector2F(GetPosition().x - GetPivot().x, GetPosition().y);
@@ -41,7 +44,26 @@ Player::Player(const Vector2F& position)
 	playerAttackPoint[1] = Vector2F(GetPosition().x + GetPivot().x, GetPosition().y);
 
 	SetCollisionLayer(GameCollision::Player);
+	SetCollisionMask(GameCollision::EnemyAttack);
 
+}
+
+void Player::TakeDamage(float damage)
+{
+	if (isDamaged)
+	{
+		return;
+	}
+
+	damagedTimer.Reset();
+	Hp -= damage;
+	isDamaged = true;
+
+	if (Hp <= 0.f)
+	{
+		Hp = 0.f;
+		currentStateIndex = static_cast<int>(PlayerState::Dead);
+	}
 }
 
 void Player::Tick(float deltaTime)
@@ -69,6 +91,16 @@ void Player::Tick(float deltaTime)
 		QuitGame();
 	}
 
+	if (Hp <= 0.f)
+	{
+		return;
+	}
+
+	if (damagedTimer.IsTimeOut())
+	{
+		isDamaged = false;
+	}
+
 
 	// 공격직후 멈추는 타이머
 	if (!attackLockTimer.IsTimeOut())
@@ -91,7 +123,7 @@ void Player::Tick(float deltaTime)
 
 	mousePosition = GetOwner()->GetCamera()->ScreenToWorld(mousePosition);
 
-	GetOwner()->GetCamera()->SetZoom(isAiming ? 1.5f : 1.f);
+	GetOwner()->GetCamera()->SetZoom(isAiming ? 2.f : 1.f);
 
 	playerMoveDir = Vector2F::Zero;
 	if (!isAiming)

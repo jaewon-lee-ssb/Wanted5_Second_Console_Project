@@ -32,10 +32,19 @@ protected:
 private:
 	virtual void InitEnemy() override;
 
+	bool AttackRangeCheck();
+
 private:
 	Utility::Timer chaseTimer;
+	Utility::Timer attackCooltime;
 
 	int findTargetCount = 0;
+
+	float attackRadius = 0.f;
+
+	float attackDamage = 10.f;
+
+	bool isAttackReady = false;
 
 	// 이미지 파일이름
 	const std::string enemyPatrolFilename = "Actors/Enemy/pufferfish_patrol.txt";

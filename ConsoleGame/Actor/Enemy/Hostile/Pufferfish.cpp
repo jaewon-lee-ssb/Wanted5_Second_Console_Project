@@ -1,5 +1,8 @@
 ﻿#include <Actor/Enemy/Hostile/Pufferfish.h>
 
+#include <Actor/Enemy/Hostile/EnemyAttackBox.h>
+
+#include <Level/Level.h>
 #include <Resource/TextImageLoader.h>
 #include <World/TileMap.h>
 #include <Utility/Random.h>
@@ -38,8 +41,6 @@ void Pufferfish::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
 
-	chaseTimer.Tick(deltaTime);
-
 
 	//  TODO : 공격 범위 안에 들어왔으면 공격
 
@@ -63,6 +64,9 @@ void Pufferfish::Tick(float deltaTime)
 void Pufferfish::UpdateState(float deltaTime)
 {
 	super::UpdateState(deltaTime);
+
+	chaseTimer.Tick(deltaTime);
+	attackCooltime.Tick(deltaTime);
 
 	switch (curState)
 	{
@@ -131,6 +135,21 @@ void Pufferfish::UpdateChase(float deltaTime)
 		ChangeEnemyState(EnemyState::Flee);
 	}
 
+	// 공격체크
+	if (AttackRangeCheck())
+	{
+		if (attackCooltime.IsTimeOut())
+		{
+			ChangeEnemyState(EnemyState::Attack);
+			attackCooltime.Reset();
+			enemyWaitTimer.SetTargetTime(0.2f* enemySpriteAnimation[static_cast<int>(EnemyState::Attack)].size());
+			isAttackReady = true;
+		}
+		
+	}
+
+
+
 	// 이동은 계속 해준다
 	if (!movePath.empty())
 	{
@@ -175,6 +194,27 @@ void Pufferfish::UpdateChase(float deltaTime)
 void Pufferfish::UpdateAttack(float deltaTime)
 {
 	// 공격
+	if (isAttackReady)
+	{
+		auto target = targetPtr.lock();
+		if (!target)
+		{
+			return;
+		}
+
+
+		// 공격 준비 됐으면 공격
+		isAttackReady = false;
+		
+		// 공격 액터 생성
+		GetOwner()->SpawnActor<EnemyAttackBox>(target->GetPosition(), Craft::Vector2F(20.f, 10.f), attackDamage);
+	}
+
+	if (enemyWaitTimer.IsTimeOut())
+	{
+		ChangeEnemyState(EnemyState::Chase);
+
+	}
 }
 
 void Pufferfish::UpdateDamaged(float deltaTime)
@@ -285,6 +325,7 @@ void Pufferfish::InitEnemy()
 
 	// 감지 범위
 	detectRadius = 150.f;
+	attackRadius = 28.f;
 
 	// 패트롤 범위
 	patrolRadius = 50.f;
@@ -297,5 +338,26 @@ void Pufferfish::InitEnemy()
 
 	enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 	chaseTimer.SetTargetTime(0.5f);
+	attackCooltime.SetTargetTime(1.5f);
+}
+
+bool Pufferfish::AttackRangeCheck()
+{
+	if (auto target = targetPtr.lock())
+	{
+		const Craft::Vector2F difference = target->GetPosition() - GetPosition();
+
+		// 타겟과의 차이 거리 제곱
+		const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
+
+		// 감지 범위의 길이 제곱
+		const float attackDistanceSquared = attackRadius * attackRadius;
+
+		if (adjustedDistanceSquared <= attackDistanceSquared)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 

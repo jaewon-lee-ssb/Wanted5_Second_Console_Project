@@ -20,6 +20,7 @@ class Player : public Craft::Actor
 	{
 		Idle,
 		Swim,
+		Dead,
 		Count,
 	};
 
@@ -30,6 +31,8 @@ public:
 	void SetTileMap(const std::shared_ptr<Craft::TileMap>& newMap) { tileMap = newMap; }
 
 	bool GetIsAiming() const { return isAiming; }
+
+	void TakeDamage(float damage);
 
 private:
 	virtual void Tick(float deltaTime) override;
@@ -46,6 +49,10 @@ private:
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 
+	float Hp = 100.f;
+
+	bool isDamaged = false;
+
 	// 플레이어 애니메이션 관련 변수
 	float animationElapsedTime = 0.f;
 	float animationFrameTime = 0.2f;
@@ -56,6 +63,7 @@ private:
 	Utility::Timer animationTimer;
 	Utility::Timer attackCooldownTimer;
 	Utility::Timer attackLockTimer;
+	Utility::Timer damagedTimer;
 
 	int currentAnimationSpriteIndex = 0;
 	int currentStateIndex = 0;
@@ -73,5 +81,6 @@ private:
 	// 플레이어 이미지 파일이름
 	const std::string playerIdleFilename = "Actors/Player/player_idle.txt";
 	const std::string playerSwimFilename = "Actors/Player/player_swim.txt";
+	const std::string playerDeadFilename = "Actors/Player/player_dead.txt";
 };
 
