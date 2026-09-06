@@ -239,6 +239,8 @@ void Pufferfish::UpdateFlee(float deltaTime)
 
 	const Craft::Vector2F difference = GetPosition() - target->GetPosition();
 
+	flipX = difference.x < 0.f ? false : true;
+
 	const float adjustedDistanceSquared = Craft::GetDistanceSquared(difference);
 	const float fleeDistanceSquared = fleeEndDistance * fleeEndDistance;
 

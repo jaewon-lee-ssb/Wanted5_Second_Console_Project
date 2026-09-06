@@ -92,6 +92,7 @@ protected:
 
 	// 패트롤 위치
 	Craft::Vector2F patrolOrigin;
+	Craft::Vector2F moveDir = Craft::Vector2F::Zero;
 
 	// 애니메이션 관련 변수
 	float animationFrameTime = 0.2f;
