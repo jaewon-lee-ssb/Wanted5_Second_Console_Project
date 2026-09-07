@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Resource/PixelImage.h>
 
@@ -15,10 +15,10 @@ struct ItemData
 	int inventoryWidth = 1;
 	int inventoryHeight = 1;
 
-	int maxStack = 1;
 	int sellPrice = 0;
 
 	ItemType type = ItemType::DropItem;
 
 	Craft::PixelImage image;
+	Craft::PixelImage rotatedImage;
 };

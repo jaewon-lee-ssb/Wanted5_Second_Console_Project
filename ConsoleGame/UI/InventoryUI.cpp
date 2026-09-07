@@ -12,7 +12,9 @@ InventoryUI::InventoryUI(const std::shared_ptr<Inventory>& inventory, const Craf
 	CreateBackgroundImage(*inventory);
 	CreateSlotImage(slotImage, Craft::BackgroundColor::DarkGray, Craft::BackgroundColor::Black);
 	CreateSlotImage(hoveredSlotImage, Craft::BackgroundColor::LightCyan, Craft::BackgroundColor::DarkGray);
-	CreateSlotImage(selectedSlotImage, Craft::BackgroundColor::Yellow, Craft::BackgroundColor::Black);
+
+	CreateSlotImage(placeableSlotImage, Craft::BackgroundColor::LightGreen, Craft::BackgroundColor::DarkGray);
+	CreateSlotImage(blockedSlotImage, Craft::BackgroundColor::LightRed, Craft::BackgroundColor::DarkGray);
 
 	SetVisible(false);
 }
@@ -37,7 +39,18 @@ void InventoryUI::Tick(float deltaTime)
 
 	UpdateHoveredSlot(*lockedInventory);
 	HandleMouseInput(*lockedInventory);
+	UpdatePreviewSlot(*lockedInventory);
 
+	auto grabbed = grabbedItem.lock();
+	if (!grabbed)
+	{
+		return;
+	}
+
+	if (Craft::Input::Get().GetKeyDown('R'))
+	{
+		grabbed->SetRotated(!grabbed->IsRotated());
+	}
 
 }
 
@@ -51,7 +64,6 @@ void InventoryUI::Draw()
 	}
 
 	DrawOuter(*lockedInventory);
-
 	DrawSlots(*lockedInventory);
 	DrawItems(*lockedInventory);
 }
@@ -119,29 +131,89 @@ void InventoryUI::UpdateHoveredSlot(const Inventory& inventory)
 		return;
 	}
 
-	hoveredSlotX = static_cast<int>(localX) / slotWidth;
-	hoveredSlotY = static_cast<int>(localY) / slotHeight;
+	hoveredSlot.x = static_cast<int>(localX) / slotWidth;
+	hoveredSlot.y = static_cast<int>(localY) / slotHeight;
 }
 
-void InventoryUI::HandleMouseInput(const Inventory& inventory)
+void InventoryUI::UpdatePreviewSlot(const Inventory& inventory)
+{
+	ClearPreviewSlot();
+
+	std::shared_ptr<Item> grabbed = grabbedItem.lock();
+
+	if (!grabbed)
+	{
+		return;
+	}
+
+	if (hoveredSlot.x < 0 || hoveredSlot.y < 0)
+	{
+		return;
+	}
+
+	// 미리 놓을칸 위치 업데이트
+	previewSlot.x = hoveredSlot.x - grabbedSlotOffset.x;
+	previewSlot.y = hoveredSlot.y - grabbedSlotOffset.y;
+
+	canPlaceGrabbedItem = inventory.CanPlaceItem(grabbed, previewSlot.x, previewSlot.y);
+}
+
+void InventoryUI::HandleMouseInput(Inventory& inventory)
 {
 	if (!Craft::Input::Get().GetKeyDown(VK_LBUTTON))
 	{
 		return;
 	}
 
-	if (hoveredSlotX < 0 || hoveredSlotY < 0)
+	if (hoveredSlot.x < 0 || hoveredSlot.y < 0)
 	{
 		return;
 	}
 
-	selectedItem = inventory.GetItemAt(hoveredSlotX, hoveredSlotY);
+	auto item = grabbedItem.lock();
+
+	// 현재 선택한 아이템이 없을때
+	if (!item)
+	{
+		auto grabItem = inventory.GetItemAt(hoveredSlot.x, hoveredSlot.y);
+		if (grabItem)
+		{
+			grabbedItem = grabItem;
+
+			const Craft::Vector2F& mousePosition = Craft::Input::Get().GetMousePosition();
+
+			grabOffset = mousePosition - GetItemPosition(*grabItem);
+
+			grabbedSlotOffset.x = hoveredSlot.x - grabItem->GetInventoryX();
+			grabbedSlotOffset.y = hoveredSlot.y - grabItem->GetInventoryY();
+		}
+	}
+	// 선택된 아이템이 있었을때
+	else
+	{
+		const int targetX = hoveredSlot.x - grabbedSlotOffset.x;
+		const int targetY = hoveredSlot.y - grabbedSlotOffset.y;
+
+		if (inventory.MoveItem(item, targetX, targetY))
+		{
+			grabbedItem.reset();
+		}
+	}
+
+	
 }
 
 void InventoryUI::ClearHoveredSlot()
 {
-	hoveredSlotX = -1;
-	hoveredSlotY = -1;
+	hoveredSlot.x = -1;
+	hoveredSlot.y = -1;
+}
+
+void InventoryUI::ClearPreviewSlot()
+{
+	previewSlot.x = -1;
+	previewSlot.y = -1;
+	canPlaceGrabbedItem = false;
 }
 
 void InventoryUI::DrawOuter(const Inventory& inventory)
@@ -152,7 +224,7 @@ void InventoryUI::DrawOuter(const Inventory& inventory)
 
 void InventoryUI::DrawSlots(const Inventory& inventory)
 {
-	std::shared_ptr<Item> selected = selectedItem.lock();
+	std::shared_ptr<Item> grabbed = grabbedItem.lock();
 
 	const int columnCount = inventory.GetColumnCount();
 	const int rowCount = inventory.GetRowCount();
@@ -163,9 +235,11 @@ void InventoryUI::DrawSlots(const Inventory& inventory)
 		{
 			Craft::Vector2F slotPosition(position.x + x * slotWidth, position.y + y * slotHeight);
 
-			const bool isHovered = x == hoveredSlotX && y == hoveredSlotY;
+			const bool isHovered = x == hoveredSlot.x && y == hoveredSlot.y;
 
-			const bool isSelected = selected && inventory.GetItemAt(x, y) == selected;
+
+			const bool isPreviewSlot = grabbed && x >= previewSlot.x && x < previewSlot.x + grabbed->GetInventoryWidth() &&
+				y >= previewSlot.y && y < previewSlot.y + grabbed->GetInventoryHeight();
 
 			const Craft::PixelImage* image = &slotImage;
 
@@ -174,9 +248,9 @@ void InventoryUI::DrawSlots(const Inventory& inventory)
 				image = &hoveredSlotImage;
 			}
 
-			if (isSelected)
+			if (isPreviewSlot)
 			{
-				image = &selectedSlotImage;
+				image = canPlaceGrabbedItem ? &placeableSlotImage : &blockedSlotImage;
 			}
 
 			Craft::Renderer::Get().SubmitUI(*image, slotPosition);
@@ -186,6 +260,8 @@ void InventoryUI::DrawSlots(const Inventory& inventory)
 
 void InventoryUI::DrawItems(const Inventory& inventory)
 {
+	std::shared_ptr<Item> grabbed = grabbedItem.lock();
+
 	// 슬롯에 아이템 출력부분
 	for (const std::shared_ptr<Item>& item : inventory.GetItems())
 	{
@@ -201,8 +277,16 @@ void InventoryUI::DrawItems(const Inventory& inventory)
 			continue;
 		}
 
+		Craft::Vector2F drawPosition = GetItemPosition(*item);
 
-		Craft::Renderer::Get().SubmitUI(itemImage, GetItemPosition(*item), Craft::Vector2F::Zero, 10001);
+		if (item == grabbed)
+		{
+			const Craft::Vector2F& mousePosition = Craft::Input::Get().GetMousePosition();
+
+			drawPosition = mousePosition - grabOffset;
+		}
+
+		Craft::Renderer::Get().SubmitUI(itemImage, drawPosition, Craft::Vector2F::Zero, 10001);
 	}
 }
 

@@ -55,9 +55,9 @@ void GameLevel::OnInitialized()
 	testFishData->inventoryHeight = 1;
 	testFishData->sellPrice = 100;
 
-	testFishData->image.width = 48;
-	testFishData->image.height = 10;
-	testFishData->image.pixels.resize(48 * 10);
+	testFishData->image.width = testFishData->inventoryWidth * 24;
+	testFishData->image.height = testFishData->inventoryHeight * 10;
+	testFishData->image.pixels.resize(testFishData->image.width * testFishData->image.height);
 
 	for (Craft::Pixel& pixel : testFishData->image.pixels)
 	{
@@ -65,10 +65,12 @@ void GameLevel::OnInitialized()
 		pixel.color = Craft::BackgroundColor::LightCyan;
 	}
 
+
 	auto testFish = std::make_shared<Item>(testFishData);
+	auto testFish2 = std::make_shared<Item>(testFishData);
 
 	inventory->AddItem(testFish);
-
+	inventory->AddItem(testFish2);
 	
 
 	Craft::UIManager::Get().CreateUI<InventoryUI>(inventory, Craft::Vector2F(20.f, 10.f));

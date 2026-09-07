@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Item/ItemData.h>
 
@@ -32,10 +32,12 @@ public:
 
 	int GetTotalSellPrice() const;
 
+	void SetRotated(bool rotated);
+
 private:
 	void SetInventoryPosition(int x, int y);
 	void ClearInventoryPosition();
-	void SetRotated(bool rotated);
+	
 	
 
 private:
