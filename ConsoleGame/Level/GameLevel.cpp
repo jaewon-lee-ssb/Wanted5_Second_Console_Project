@@ -1,8 +1,6 @@
 ﻿#include <Level/GameLevel.h>
 
 #include <Actor/Player/Player.h>
-#include <Actor/Enemy/NonHostile/MiniFish.h>
-#include <Actor/Enemy/Hostile/Pufferfish.h>
 #include <Actor/Enemy/EnemySpawner.h>
 
 #include <Inventory/Inventory.h>
@@ -10,6 +8,7 @@
 
 #include <Item/Item.h>
 #include <Item/ItemData.h>
+#include <Item/ItemPickup.h>
 
 #include <Engine/Engine.h>
 #include <Camera/Camera.h>
@@ -47,6 +46,8 @@ void GameLevel::OnInitialized()
 	
 	inventory = std::make_shared<Inventory>(8, 6);
 
+	player->SetInventory(inventory);
+
 	auto testFishData = std::make_shared<ItemData>();
 
 	testFishData->id = 1;
@@ -72,6 +73,13 @@ void GameLevel::OnInitialized()
 	inventory->AddItem(testFish);
 	inventory->AddItem(testFish2);
 	
+	auto pickupTestItem =
+		std::make_shared<Item>(testFishData);
+
+	SpawnActor<ItemPickup>(
+		Craft::Vector2F(160.f, 30.f),
+		pickupTestItem);
+
 
 	Craft::UIManager::Get().CreateUI<InventoryUI>(inventory, Craft::Vector2F(20.f, 10.f));
 

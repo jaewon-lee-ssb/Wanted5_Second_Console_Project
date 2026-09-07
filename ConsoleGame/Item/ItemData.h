@@ -18,7 +18,7 @@ struct ItemData
 	int sellPrice = 0;
 
 	ItemType type = ItemType::DropItem;
+	ItemGrade grade = ItemGrade::Common;
 
 	Craft::PixelImage image;
-	Craft::PixelImage rotatedImage;
 };

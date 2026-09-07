@@ -3,7 +3,8 @@
 #include <Actor/Player/Harpoon.h>
 #include <Actor/Enemy/Enemy.h>
 
-
+#include <Inventory/Inventory.h>
+#include <Item/Item.h>
 
 #include <Input/Input.h>
 #include <Math/Vector2.h>
@@ -46,7 +47,7 @@ Player::Player(const Vector2F& position)
 	playerAttackPoint[1] = Vector2F(GetPosition().x + GetPivot().x, GetPosition().y);
 
 	SetCollisionLayer(GameCollision::Player);
-	SetCollisionMask(GameCollision::EnemyAttack);
+	SetCollisionMask(GameCollision::EnemyAttack | GameCollision::Item);
 
 }
 
@@ -66,6 +67,18 @@ void Player::TakeDamage(float damage)
 		Hp = 0.f;
 		currentStateIndex = static_cast<int>(PlayerState::Dead);
 	}
+}
+
+bool Player::TryAddItem(const std::shared_ptr<Item>& item)
+{
+	auto targetInventory = inventory.lock();
+
+	if (!targetInventory || !item)
+	{
+		return false;
+	}
+
+	return targetInventory->AddItem(item);
 }
 
 void Player::Tick(float deltaTime)

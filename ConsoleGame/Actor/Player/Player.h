@@ -12,6 +12,9 @@ namespace Craft
 	class TileMap;
 }
 
+class Inventory;
+class Item;
+
 class Player : public Craft::Actor
 {
 	TYPE_DECLARATIONS(Player, Actor)
@@ -34,6 +37,10 @@ public:
 
 	void TakeDamage(float damage);
 
+	void SetInventory(const std::shared_ptr<Inventory>& newInventory) { inventory = newInventory; }
+
+	bool TryAddItem(const std::shared_ptr<Item>& item);
+
 private:
 	virtual void Tick(float deltaTime) override;
 
@@ -46,6 +53,8 @@ private:
 
 	// 작살 공격력
 	float harpoonDamage = 50.f;
+
+	std::weak_ptr<Inventory> inventory;
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 

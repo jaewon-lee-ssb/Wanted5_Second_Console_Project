@@ -13,5 +13,6 @@ namespace Craft
 		constexpr CollisionLayer Layer1 = 1u << 1;
 		constexpr CollisionLayer Layer2 = 1u << 2;
 		constexpr CollisionLayer Layer3 = 1u << 3;
+		constexpr CollisionLayer Layer4 = 1u << 4;
 	}
 }
