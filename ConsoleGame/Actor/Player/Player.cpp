@@ -75,6 +75,7 @@ void Player::Tick(float deltaTime)
 	animationTimer.Tick(deltaTime);
 	attackCooldownTimer.Tick(deltaTime);
 	attackLockTimer.Tick(deltaTime);
+	damagedTimer.Tick(deltaTime);
 
 
 

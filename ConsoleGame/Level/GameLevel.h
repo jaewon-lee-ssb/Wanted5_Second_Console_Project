@@ -2,6 +2,7 @@
 
 #include <Level/Level.h>
 
+class Inventory;
 
 class GameLevel : public Craft::Level
 {
@@ -16,5 +17,6 @@ private:
 	virtual void Draw() override;
 
 private:
+	std::shared_ptr<Inventory> inventory;
 };
 
