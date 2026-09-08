@@ -143,6 +143,7 @@ void Pufferfish::UpdateChase(float deltaTime)
 			ChangeEnemyState(EnemyState::Attack);
 			attackCooltime.Reset();
 			enemyWaitTimer.SetTargetTime(0.2f* enemySpriteAnimation[static_cast<int>(EnemyState::Attack)].size());
+			enemyWaitTimer.Reset();
 			isAttackReady = true;
 		}
 		

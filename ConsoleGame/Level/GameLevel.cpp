@@ -1,10 +1,13 @@
 ﻿#include <Level/GameLevel.h>
 
+#include <Level/EndLevel.h>
+
 #include <Actor/Player/Player.h>
 #include <Actor/Enemy/EnemySpawner.h>
 
 #include <Inventory/Inventory.h>
 #include <UI/InventoryUI.h>
+#include <UI/GameHUD.h>
 
 #include <Item/Item.h>
 #include <Item/ItemData.h>
@@ -31,7 +34,10 @@ void GameLevel::OnInitialized()
 	map->SetPathDebugEnabled(isDebugMode);
 
 	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 30.f));
+	this->player = player;
 	player->SetTileMap(map);
+
+	Craft::UIManager::Get().CreateUI<GameHUD>(player);
 
 	if (GetCamera())
 	{
@@ -54,7 +60,8 @@ void GameLevel::OnInitialized()
 
 	Craft::UIManager::Get().CreateUI<InventoryUI>(inventory, Craft::Vector2F(20.f, 10.f));
 
-
+	gameTimer.SetTargetTime(gameDuration);
+	gameTimer.Reset();
 
 }
 
@@ -67,6 +74,8 @@ void GameLevel::BeginPlay()
 
 void GameLevel::Tick(float deltaTime)
 {
+	gameTimer.Tick(deltaTime);
+
 	if (Craft::Input::Get().GetKeyDown('Q'))
 	{
 		isDebugMode = !isDebugMode;
@@ -79,7 +88,24 @@ void GameLevel::Tick(float deltaTime)
 
 	Level::Tick(deltaTime);
 
-	
+	if (hasRequestedEndLevel)
+	{
+		return;
+	}
+
+	const std::shared_ptr<Player> lockedPlayer = player.lock();
+	const bool isPlayerDead = !lockedPlayer || lockedPlayer->GetHealth() <= 0.f;
+
+	if (gameTimer.IsTimeOut() || isPlayerDead)
+	{
+		hasRequestedEndLevel = true;
+
+		const int totalEarnedMoney = inventory
+			? inventory->CalculateTotalSellPrice()
+			: 0;
+
+		Craft::Engine::Get().AddNewLevel<EndLevel>(totalEarnedMoney);
+	}
 }
 
 void GameLevel::Draw()

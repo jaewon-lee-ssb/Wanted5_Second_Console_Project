@@ -45,6 +45,9 @@ namespace Craft
 		// 현재 프레임에 입력이 눌리면 계속 호출.
 		bool GetKey(int keyCode) const;
 
+		// 이번 프레임에 새로 눌린 키보드 키가 하나라도 있는지 확인.
+		bool GetAnyKeyDown() const;
+
 		// 현재 마우스 포인터의 콘솔 셀 좌표를 반환.
 		const Vector2F& GetMousePosition() const { return mousePosition; }
 

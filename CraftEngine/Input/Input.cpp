@@ -78,6 +78,20 @@ namespace Craft
 		return keyStates[keyCode].isKeyDown;
 	}
 
+	bool Input::GetAnyKeyDown() const
+	{
+		// 0~7은 마우스 버튼용 가상 키 코드이므로 제외한다.
+		for (int keyCode = 8; keyCode < keyCount; ++keyCode)
+		{
+			if (keyStates[keyCode].pressedThisFrame)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	Input& Input::Get()
 	{
 		assert(instance);

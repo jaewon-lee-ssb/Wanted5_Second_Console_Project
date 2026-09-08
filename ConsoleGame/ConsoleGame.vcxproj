@@ -118,9 +118,12 @@
     <ClCompile Include="Item\Item.cpp" />
     <ClCompile Include="Item\ItemPickup.cpp" />
     <ClCompile Include="Level\GameLevel.cpp" />
+    <ClCompile Include="Level\EndLevel.cpp" />
     <ClCompile Include="Level\StartLevel.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="UI\InventoryUI.cpp" />
+    <ClCompile Include="UI\GameHUD.cpp" />
+    <ClCompile Include="UI\PixelText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Enemy\Enemy.h" />
@@ -139,8 +142,11 @@
     <ClInclude Include="Item\ItemPickup.h" />
     <ClInclude Include="Item\ItemType.h" />
     <ClInclude Include="Level\GameLevel.h" />
+    <ClInclude Include="Level\EndLevel.h" />
     <ClInclude Include="Level\StartLevel.h" />
     <ClInclude Include="UI\InventoryUI.h" />
+    <ClInclude Include="UI\GameHUD.h" />
+    <ClInclude Include="UI\PixelText.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,6 +3,8 @@
 #include <Core/Core.h>
 
 #include <memory>
+#include <type_traits>
+#include <utility>
 
 namespace Craft
 {
@@ -52,11 +54,11 @@ namespace Craft
 		// 1. std::is_base_of 하는일이 무엇인지
 		// 2. std::enable_if_t 하는일이 무엇인지
 		// 3. typename = std::enable_if_t<std::is_base_of<Level, T>::value>>
-		template<typename T, typename = std::enable_if_t<std::is_base_of<Level, T>::value>>
-		void AddNewLevel()
+		template<typename T, typename ...Args, typename = std::enable_if_t<std::is_base_of<Level, T>::value>>
+		void AddNewLevel(Args&& ...args)
 		{
 			// 추가 요청 레벨 객체 생성.
-			nextLevel = std::make_shared<T>();
+			nextLevel = std::make_shared<T>(std::forward<Args>(args)...);
 		}
 
 		// 싱글톤 접근 함수.

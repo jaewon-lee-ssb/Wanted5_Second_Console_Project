@@ -1,4 +1,4 @@
-#include <Actor/Enemy/Hostile/EnemyAttackBox.h>
+﻿#include <Actor/Enemy/Hostile/EnemyAttackBox.h>
 
 #include <Actor/Player/Player.h>
 
@@ -58,7 +58,7 @@ EnemyAttackBox::EnemyAttackBox(const Craft::Vector2F& position, const Craft::Vec
 
 void EnemyAttackBox::Draw()
 {
-	if (!IsActive())
+	/*if (!IsActive())
 	{
 		return;
 	}
@@ -80,7 +80,7 @@ void EnemyAttackBox::Draw()
 		false,
 		debugPivot,
 		sortingOrder,
-		camera->GetZoom());
+		camera->GetZoom());*/
 }
 
 void EnemyAttackBox::Tick(float deltaTime)

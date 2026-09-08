@@ -34,6 +34,9 @@ public:
 	void SetTileMap(const std::shared_ptr<Craft::TileMap>& newMap) { tileMap = newMap; }
 
 	bool GetIsAiming() const { return isAiming; }
+	float GetHealth() const { return Hp; }
+	float GetMaxHealth() const { return maxHp; }
+	float GetAttackCooldownProgress() const { return attackCooldownTimer.GetProgress(); }
 
 	void TakeDamage(float damage);
 
@@ -58,7 +61,8 @@ private:
 	
 	Craft::Vector2F playerMoveDir = Craft::Vector2F::Zero;
 
-	float Hp = 100.f;
+	float maxHp = 100.f;
+	float Hp = maxHp;
 
 	bool isDamaged = false;
 
