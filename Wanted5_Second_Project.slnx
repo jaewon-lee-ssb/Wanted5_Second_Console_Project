@@ -9,4 +9,7 @@
   <Project Path="CraftEngine/CraftEngine.vcxproj" Id="77d3509e-5f97-4a46-8eab-e7abe27e500c">
     <Platform Project="x64" />
   </Project>
+  <Project Path="SoundSystem/SoundSystem.vcxproj" Id="5311be94-7568-405d-841a-6b4ce6332e87">
+    <Build Solution="*|x86" Project="false" />
+  </Project>
 </Solution>
