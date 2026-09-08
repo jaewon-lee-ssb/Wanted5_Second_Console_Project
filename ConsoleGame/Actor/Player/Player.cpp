@@ -38,7 +38,7 @@ Player::Player(const Vector2F& position)
 	ChangeImage(playerSpriteAnimation[currentStateIndex][0]);
 
 	animationTimer.SetTargetTime(animationFrameTime);
-	attackCooldownTimer.SetTargetTime(3.f);
+	attackCooldownTimer.SetTargetTime(1.5f);
 	attackLockTimer.SetTargetTime(0.5f);
 	damagedTimer.SetTargetTime(3.f);
 

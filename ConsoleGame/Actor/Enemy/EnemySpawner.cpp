@@ -101,10 +101,10 @@ void EnemySpawner::InitializeDropTables()
 
 	miniFishDropTable =
 	{
-		{ commonFishData,    70 },
-		{ rareFishData,      20 },
-		{ epicFishData,      8 },
-		{ legendaryFishData, 2 }
+		{ commonFishData,    50 },
+		{ rareFishData,      40 },
+		{ epicFishData,      30 },
+		{ legendaryFishData, 20 }
 	};
 }
 
