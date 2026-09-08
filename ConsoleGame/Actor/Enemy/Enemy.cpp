@@ -2,6 +2,9 @@
 #include <Actor/Player/Player.h>
 #include <Collision/GameCollisionLayers.h>
 
+#include <Item/Item.h>
+#include <Item/ItemPickup.h>
+
 #include <Level/Level.h>
 #include <World/TileMap.h>
 #include <Utility/Random.h>
@@ -145,6 +148,73 @@ bool Enemy::CheckDead()
 		return true;
 	}
 	return false;
+}
+
+std::shared_ptr<const ItemData> Enemy::RollDrop() const
+{
+
+	int totalWeight = 0;
+
+	// 유효한 항목의 전체 가중치 계산
+	for (const DropEntry& entry : dropTable)
+	{
+		if (!entry.itemData || entry.weight <= 0)
+		{
+			continue;
+		}
+
+		totalWeight += entry.weight;
+	}
+
+	if (totalWeight <= 0)
+	{
+		return nullptr;
+	}
+
+	// RandomRange의 정수 버전은 최댓값도 포함한다.
+	int randomWeight = Utility::RandomRange(1, totalWeight);
+
+	for (const DropEntry& entry : dropTable)
+	{
+		if (!entry.itemData || entry.weight <= 0)
+		{
+			continue;
+		}
+
+		randomWeight -= entry.weight;
+
+		if (randomWeight <= 0)
+		{
+			return entry.itemData;
+		}
+	}
+
+	return nullptr;
+}
+
+void Enemy::DropItem()
+{
+	if (hasDroppedItem)
+	{
+		return;
+	}
+
+	// 유효한 데이터가 없어도 다시 시도하지 않도록 먼저 설정
+	hasDroppedItem = true;
+
+	std::shared_ptr<const ItemData> itemData = RollDrop();
+
+	if (!itemData || !GetOwner())
+	{
+		return;
+	}
+
+	auto item = std::make_shared<Item>(itemData);
+
+	GetOwner()->SpawnActor<ItemPickup>(
+		GetPosition(),
+		item
+	);
 }
 
 bool Enemy::FollowPath(float deltaTime)

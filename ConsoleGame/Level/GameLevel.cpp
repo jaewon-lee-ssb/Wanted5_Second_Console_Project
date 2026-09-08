@@ -11,6 +11,7 @@
 #include <Item/ItemPickup.h>
 
 #include <Engine/Engine.h>
+#include <Input/Input.h>
 #include <Camera/Camera.h>
 #include <World/TileMap.h>
 #include <UIManager/UIManager.h>
@@ -20,13 +21,14 @@ void GameLevel::OnInitialized()
 	Level::OnInitialized();
 
 	auto map = SpawnActor<Craft::TileMap>();
+	tileMap = map;
 
 	if (!map->Load("Maps/Map1.txt"))
 	{
 		Craft::Engine::Get().Quit();
 	}
 
-	map->SetPathDebugEnabled(true);
+	map->SetPathDebugEnabled(isDebugMode);
 
 	auto player = SpawnActor<Player>(Craft::Vector2F(100.f, 30.f));
 	player->SetTileMap(map);
@@ -48,38 +50,7 @@ void GameLevel::OnInitialized()
 
 	player->SetInventory(inventory);
 
-	auto testFishData = std::make_shared<ItemData>();
-
-	testFishData->id = 1;
-	testFishData->name = "Mini Fish";
-	testFishData->inventoryWidth = 2;
-	testFishData->inventoryHeight = 1;
-	testFishData->sellPrice = 100;
-
-	testFishData->image.width = testFishData->inventoryWidth * 24;
-	testFishData->image.height = testFishData->inventoryHeight * 10;
-	testFishData->image.pixels.resize(testFishData->image.width * testFishData->image.height);
-
-	for (Craft::Pixel& pixel : testFishData->image.pixels)
-	{
-		pixel.transparent = false;
-		pixel.color = Craft::BackgroundColor::LightCyan;
-	}
-
-
-	auto testFish = std::make_shared<Item>(testFishData);
-	auto testFish2 = std::make_shared<Item>(testFishData);
-
-	inventory->AddItem(testFish);
-	inventory->AddItem(testFish2);
 	
-	auto pickupTestItem =
-		std::make_shared<Item>(testFishData);
-
-	SpawnActor<ItemPickup>(
-		Craft::Vector2F(160.f, 30.f),
-		pickupTestItem);
-
 
 	Craft::UIManager::Get().CreateUI<InventoryUI>(inventory, Craft::Vector2F(20.f, 10.f));
 
@@ -96,6 +67,16 @@ void GameLevel::BeginPlay()
 
 void GameLevel::Tick(float deltaTime)
 {
+	if (Craft::Input::Get().GetKeyDown('Q'))
+	{
+		isDebugMode = !isDebugMode;
+
+		if (const std::shared_ptr<Craft::TileMap> map = tileMap.lock())
+		{
+			map->SetPathDebugEnabled(isDebugMode);
+		}
+	}
+
 	Level::Tick(deltaTime);
 
 	

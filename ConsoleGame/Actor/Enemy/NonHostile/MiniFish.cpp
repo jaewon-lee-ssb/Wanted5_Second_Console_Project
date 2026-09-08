@@ -194,6 +194,7 @@ void MiniFish::UpdateDead(float deltaTime)
 
 	if (enemyWaitTimer.IsTimeOut())
 	{
+		DropItem();
 		Destroy();
 	}
 

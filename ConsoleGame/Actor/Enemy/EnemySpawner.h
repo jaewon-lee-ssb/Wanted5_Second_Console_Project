@@ -2,6 +2,10 @@
 
 #include <Actor/Actor.h>
 
+#include <Item/DropEntry.h>
+
+#include <vector>
+
 namespace Craft
 {
 	class TileMap;
@@ -18,6 +22,8 @@ public:
 	void SetTileMap(std::shared_ptr<Craft::TileMap>& map) { tileMap = map; }
 
 private:
+	void InitializeDropTables();
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float deltaTime) override;
 
@@ -37,5 +43,7 @@ private:
 
 	// 맵 약참조
 	std::weak_ptr<Craft::TileMap> tileMap;
+
+	std::vector<DropEntry> miniFishDropTable;
 };
 

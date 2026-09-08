@@ -3,8 +3,11 @@
 #include <Actor/Actor.h>
 
 #include <Actor/Enemy/EnemyTypes.h>
+#include <Item/DropEntry.h>
 
 #include <Utility/Timer.h>
+
+#include <vector>
 
 namespace Craft
 {
@@ -25,6 +28,8 @@ public:
 	void SetMoveSpeed(float moveSpeed) { enemyMoveSpeed = moveSpeed; }
 
 	void TakeDamage(float damage);
+
+	void SetDropTable(const std::vector<DropEntry>& newDropTable) { dropTable = newDropTable; }
 
 	// Getter/Setter
 	inline bool IsDead() const { return isDead; }
@@ -47,6 +52,10 @@ protected:
 	bool DetectTarget() const;
 
 	bool CheckDead();
+
+	std::shared_ptr<const ItemData> RollDrop() const;
+
+	void DropItem();
 
 	// 길 따라가는 함수
 	bool FollowPath(float deltaTime);
@@ -73,6 +82,8 @@ protected:
 	// 이동속도
 	float enemyMoveSpeed = 0.f;
 	
+	bool hasDroppedItem = false;
+
 	// 체력
 	float Hp = 0;
 	bool isDamaged = false;
@@ -120,6 +131,9 @@ protected:
 
 	// 적 애니메이션
 	std::vector<std::vector<Craft::PixelImage>> enemySpriteAnimation;
+
+	// 드롭테이블
+	std::vector<DropEntry> dropTable;
 
 };
 

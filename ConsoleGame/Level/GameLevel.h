@@ -4,6 +4,11 @@
 
 class Inventory;
 
+namespace Craft
+{
+	class TileMap;
+}
+
 class GameLevel : public Craft::Level
 {
 public:
@@ -18,5 +23,7 @@ private:
 
 private:
 	std::shared_ptr<Inventory> inventory;
+	std::weak_ptr<Craft::TileMap> tileMap;
+	bool isDebugMode = false;
 };
 

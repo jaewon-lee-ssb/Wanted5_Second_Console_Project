@@ -1,5 +1,5 @@
 ﻿#include <Engine/Engine.h>
-#include <Level/GameLevel.h>
+#include <Level/StartLevel.h>
 
 #include <Utility/Random.h>
 
@@ -9,6 +9,6 @@ int main()
 {
 	Engine engine;
 	Utility::SetRandomSeed();
-	engine.AddNewLevel<GameLevel>();
+	engine.AddNewLevel<StartLevel>();
 	engine.Run();
 }

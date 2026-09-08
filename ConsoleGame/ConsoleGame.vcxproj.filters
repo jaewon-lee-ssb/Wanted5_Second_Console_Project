@@ -24,6 +24,9 @@
     <ClCompile Include="Level\GameLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Level\StartLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Actor\Player\Player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Level\GameLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Level\StartLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Actor\Player\Player.h">
