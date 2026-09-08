@@ -178,6 +178,7 @@ void EnemySpawner::SpawnEnemy()
 		{
 			auto enemy = GetOwner()->SpawnActor<Pufferfish>(spawnPoint);
 			enemy->SetTileMap(map);
+			enemy->SetDropTable(miniFishDropTable);
 		}
 
 		

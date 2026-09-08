@@ -69,7 +69,7 @@ void GameLevel::BeginPlay()
 {
 	Level::BeginPlay();
 
-	
+	Craft::Engine::Get().PlayBackgroundMusic("deepsee.wav");
 }
 
 void GameLevel::Tick(float deltaTime)

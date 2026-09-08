@@ -1,5 +1,6 @@
 ﻿#include <Actor/Enemy/NonHostile/MiniFish.h>
 
+#include <Engine/Engine.h>
 #include <Resource/TextImageLoader.h>
 #include <Utility/Random.h>
 #include <World/TileMap.h>
@@ -191,6 +192,12 @@ void MiniFish::UpdateDead(float deltaTime)
 	// 체크함수는 충돌체크 함수에다가 넣어주면 될거같다.
 	
 	ResetPath();
+
+	if (!isDead)
+	{
+		Craft::Engine::Get().PlayOneShot("minifishdie.wav");
+	}
+	isDead = true;
 
 	if (enemyWaitTimer.IsTimeOut())
 	{

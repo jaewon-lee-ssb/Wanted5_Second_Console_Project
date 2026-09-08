@@ -5,6 +5,7 @@
 #include <Item/Item.h>
 #include <Item/ItemPickup.h>
 
+#include <Engine/Engine.h>
 #include <Level/Level.h>
 #include <World/TileMap.h>
 #include <Utility/Random.h>
@@ -32,6 +33,7 @@ void Enemy::TakeDamage(float damage)
 	ChangeEnemyState(EnemyState::Damaged);
 	enemyWaitTimer.SetTargetTime(0.2f * enemySpriteAnimation[static_cast<int>(curState)].size());
 	enemyWaitTimer.Reset();
+	Craft::Engine::Get().PlayOneShot("damage.wav");
 
 	if (Hp <= 0.f)
 	{

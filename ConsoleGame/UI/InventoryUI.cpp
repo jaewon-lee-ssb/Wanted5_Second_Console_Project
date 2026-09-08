@@ -2,6 +2,7 @@
 
 #include <Inventory/Inventory.h>
 
+#include <Engine/Engine.h>
 #include <Render/Renderer.h>
 #include <Input/Input.h>
 #include <Math/Color.h>
@@ -110,6 +111,7 @@ void InventoryUI::ToggleVisibility()
 		return;
 	}
 
+	Craft::Engine::Get().PlayOneShot("tab.wav");
 	SetVisible(!IsVisible());
 }
 
@@ -171,6 +173,8 @@ void InventoryUI::HandleMouseInput(Inventory& inventory)
 	}
 
 	auto item = grabbedItem.lock();
+
+	Craft::Engine::Get().PlayOneShot("mouseclick.wav");
 
 	// 현재 선택한 아이템이 없을때
 	if (!item)

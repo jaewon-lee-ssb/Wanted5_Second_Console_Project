@@ -6,6 +6,7 @@
 #include <Inventory/Inventory.h>
 #include <Item/Item.h>
 
+#include <Engine/Engine.h>
 #include <Input/Input.h>
 #include <Math/Vector2.h>
 #include <Level/Level.h>
@@ -57,6 +58,8 @@ void Player::TakeDamage(float damage)
 	{
 		return;
 	}
+
+	Craft::Engine::Get().PlayOneShot("playerdamaged.wav");
 
 	damagedTimer.Reset();
 	Hp -= damage;
@@ -176,6 +179,7 @@ void Player::Tick(float deltaTime)
 
 	if (Input::Get().GetKeyDown(VK_LBUTTON) && isAiming && attackCooldownTimer.IsTimeOut())
 	{
+		Craft::Engine::Get().PlayOneShot("weapon.wav");
 		attackCooldownTimer.Reset();
 		attackLockTimer.Reset();
 		isAiming = false;

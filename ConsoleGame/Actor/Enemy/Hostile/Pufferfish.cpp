@@ -2,6 +2,7 @@
 
 #include <Actor/Enemy/Hostile/EnemyAttackBox.h>
 
+#include <Engine/Engine.h>
 #include <Level/Level.h>
 #include <Resource/TextImageLoader.h>
 #include <World/TileMap.h>
@@ -307,9 +308,15 @@ void Pufferfish::UpdateReturn(float deltaTime)
 void Pufferfish::UpdateDead(float deltaTime)
 {
 	ResetPath();
+	if (!isDead)
+	{
+		Craft::Engine::Get().PlayOneShot("pufferfishdie.wav");
+	}
+	isDead = true;
 
 	if (enemyWaitTimer.IsTimeOut())
 	{
+		DropItem();
 		Destroy();
 	}
 }

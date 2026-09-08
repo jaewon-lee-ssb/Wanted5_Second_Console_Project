@@ -4,6 +4,8 @@
 #include <Inventory/Inventory.h>
 #include <Collision/GameCollisionLayers.h>
 
+#include <Engine/Engine.h>
+
 ItemPickup::ItemPickup(const Craft::Vector2F& position, const std::shared_ptr<Item>& item)
 	: super({}, position), item(item)
 {
@@ -36,6 +38,8 @@ void ItemPickup::OnCollision(const std::shared_ptr<Actor>& other)
 	{
 		return;
 	}
+
+	Craft::Engine::Get().PlayOneShot("pickup.wav");
 
 	if (player->TryAddItem(item))
 	{
