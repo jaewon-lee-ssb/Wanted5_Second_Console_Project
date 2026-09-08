@@ -66,6 +66,9 @@
     <ClCompile Include="Item\ItemPickup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Actor\Interaction\ExitZone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor\Player\Harpoon.h">
@@ -129,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Item\ItemPickup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor\Interaction\ExitZone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

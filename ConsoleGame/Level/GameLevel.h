@@ -5,6 +5,7 @@
 
 class Inventory;
 class Player;
+class ExitZone;
 
 namespace Craft
 {
@@ -23,10 +24,14 @@ private:
 	virtual void Tick(float deltaTime) override;
 	virtual void Draw() override;
 
+	void RequestEndLevel();
+
 private:
 	std::shared_ptr<Inventory> inventory;
 	std::weak_ptr<Player> player;
 	std::weak_ptr<Craft::TileMap> tileMap;
+	std::vector<std::weak_ptr<ExitZone>> exitZones;
+
 	Utility::Timer gameTimer;
 	bool isDebugMode = false;
 	bool hasRequestedEndLevel = false;

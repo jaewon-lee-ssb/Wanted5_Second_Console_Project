@@ -5,6 +5,8 @@
 #include <Actor/Player/Player.h>
 #include <Actor/Enemy/EnemySpawner.h>
 
+#include <Actor/Interaction/ExitZone.h>
+
 #include <Inventory/Inventory.h>
 #include <UI/InventoryUI.h>
 #include <UI/GameHUD.h>
@@ -49,14 +51,20 @@ void GameLevel::OnInitialized()
 	auto enemySpawner = SpawnActor<EnemySpawner>();
 	enemySpawner->SetTileMap(map);
 
-	//auto enemy = SpawnActor<Pufferfish>(Craft::Vector2F(100.f, 50.f));
-	//enemy->SetTileMap(map);
+	auto SpawnExitZone = [&](const Craft::Vector2F& position)
+		{
+			auto exit = SpawnActor<ExitZone>(position);
+			exit->SetPlayer(player);
+			exitZones.emplace_back(exit);
+		};
+
+	SpawnExitZone({ 520.f, 42.f });
+	SpawnExitZone({ 1356.f, 466.f });
+	SpawnExitZone({ 492.f, 878.f });
 	
 	inventory = std::make_shared<Inventory>(8, 6);
 
 	player->SetInventory(inventory);
-
-	
 
 	Craft::UIManager::Get().CreateUI<InventoryUI>(inventory, Craft::Vector2F(20.f, 10.f));
 
@@ -88,27 +96,45 @@ void GameLevel::Tick(float deltaTime)
 
 	Level::Tick(deltaTime);
 
-	if (hasRequestedEndLevel)
-	{
-		return;
-	}
-
 	const std::shared_ptr<Player> lockedPlayer = player.lock();
 	const bool isPlayerDead = !lockedPlayer || lockedPlayer->GetHealth() <= 0.f;
-
+	
 	if (gameTimer.IsTimeOut() || isPlayerDead)
 	{
-		hasRequestedEndLevel = true;
-
-		const int totalEarnedMoney = inventory
-			? inventory->CalculateTotalSellPrice()
-			: 0;
-
-		Craft::Engine::Get().AddNewLevel<EndLevel>(totalEarnedMoney);
+		RequestEndLevel();
 	}
+
+	for (const auto& weakExit : exitZones)
+	{
+		if (auto exit = weakExit.lock())
+		{
+			if (exit->HasEscapeRequested())
+			{
+				RequestEndLevel();
+				return;
+			}
+		}
+	}
+
 }
 
 void GameLevel::Draw()
 {
 	Level::Draw();
+}
+
+void GameLevel::RequestEndLevel()
+{
+	if (hasRequestedEndLevel)
+	{
+		return;
+	}
+
+	hasRequestedEndLevel = true;
+
+	const int totalEarnedMoney = inventory
+		? inventory->CalculateTotalSellPrice()
+		: 0;
+
+	Craft::Engine::Get().AddNewLevel<EndLevel>(totalEarnedMoney);
 }
