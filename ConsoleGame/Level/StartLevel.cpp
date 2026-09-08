@@ -197,6 +197,7 @@ void StartLevel::Tick(float deltaTime)
 
 	if (Craft::Input::Get().GetKeyDown(VK_RETURN) || IsStartButtonClicked())
 	{
+		Craft::Engine::Get().PlayOneShot("game_start.wav");
 		Craft::Engine::Get().AddNewLevel<GameLevel>();
 	}
 }

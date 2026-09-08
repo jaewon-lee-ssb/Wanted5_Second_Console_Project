@@ -3,8 +3,11 @@
 #include <Core/Core.h>
 
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
+
+class Sound;
 
 namespace Craft
 {
@@ -14,6 +17,7 @@ namespace Craft
 	class Renderer;
 	class CollisionSystem;
 	class UIManager;
+	
 
 	// 메인 엔진 클래스.
 	// 엔진 루프를 제공.
@@ -48,6 +52,11 @@ namespace Craft
 
 		// 엔진 종료 함수
 		void Quit();
+
+		// 사운드 재생 함수(사운드 시스템 래퍼 함수)
+		void PlayOneShot(const std::string& filename);
+		void PlayBackgroundMusic(const std::string& filename);
+		void StopBackgroundMusic();
 
 		// 레벨 추가 요청 함수.
 		// TODO: 나중에 밑에 것들 찾아보기
@@ -126,6 +135,8 @@ namespace Craft
 
 		// 충돌 시스템 객체
 		std::unique_ptr<CollisionSystem> collisionSystem;
+
+		std::unique_ptr<Sound> sound;
 	};
 }
 
