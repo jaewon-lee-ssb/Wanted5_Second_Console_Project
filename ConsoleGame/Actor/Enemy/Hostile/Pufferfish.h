@@ -37,6 +37,7 @@ private:
 private:
 	Utility::Timer chaseTimer;
 	Utility::Timer attackCooltime;
+	Utility::Timer lifetimeTimer;
 
 	int findTargetCount = 0;
 

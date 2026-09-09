@@ -48,10 +48,10 @@ void InventoryUI::Tick(float deltaTime)
 		return;
 	}
 
-	if (Craft::Input::Get().GetKeyDown('R'))
+	/*if (Craft::Input::Get().GetKeyDown('R'))
 	{
 		grabbed->SetRotated(!grabbed->IsRotated());
-	}
+	}*/
 
 }
 

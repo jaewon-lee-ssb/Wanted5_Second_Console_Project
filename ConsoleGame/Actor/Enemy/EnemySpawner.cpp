@@ -121,7 +121,7 @@ void EnemySpawner::BeginPlay()
 void EnemySpawner::Tick(float deltaTime)
 {
 	super::Tick(deltaTime);
-
+	 
 	spawnTimer -= deltaTime;
 
 	if (spawnTimer <= 0.f)

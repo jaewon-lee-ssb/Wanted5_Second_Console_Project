@@ -62,7 +62,7 @@ void GameLevel::OnInitialized()
 	SpawnExitZone({ 1356.f, 466.f });
 	SpawnExitZone({ 492.f, 878.f });
 	
-	inventory = std::make_shared<Inventory>(8, 6);
+	inventory = std::make_shared<Inventory>(4, 3);
 
 	player->SetInventory(inventory);
 

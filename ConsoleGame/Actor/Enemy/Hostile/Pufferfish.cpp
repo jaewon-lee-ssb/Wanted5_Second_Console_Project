@@ -68,6 +68,13 @@ void Pufferfish::UpdateState(float deltaTime)
 
 	chaseTimer.Tick(deltaTime);
 	attackCooltime.Tick(deltaTime);
+	lifetimeTimer.Tick(deltaTime);
+
+	if (lifetimeTimer.IsTimeOut())
+	{
+		lifetimeTimer.Reset();
+		enemyMoveSpeed += 10.f;
+	}
 
 	switch (curState)
 	{
@@ -349,6 +356,7 @@ void Pufferfish::InitEnemy()
 	enemyWaitTimer.SetTargetTime(Utility::RandomRange(0.f, patrolRetryInterval));
 	chaseTimer.SetTargetTime(0.5f);
 	attackCooltime.SetTargetTime(1.5f);
+	lifetimeTimer.SetTargetTime(60.f);
 }
 
 bool Pufferfish::AttackRangeCheck()
