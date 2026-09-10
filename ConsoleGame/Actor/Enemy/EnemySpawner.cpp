@@ -144,12 +144,13 @@ void EnemySpawner::SpawnEnemy()
 
 	constexpr int maxAttempts = 10;
 	
-	const float enemySpawnIndex = Utility::RandomRange(0.f, 10.f);
-	//const float enemySpawnIndex = 8.f;
+	//const float enemySpawnIndex = Utility::RandomRange(0.f, 10.f);
+	const float enemySpawnIndex = 8.f;
+	const Craft::Vector2F spawnPoint(130.f, 60.f);
 
 	for (int attempt = 0; attempt < maxAttempts; ++attempt)
 	{
-		const Craft::Vector2F spawnPoint(Utility::RandomRange(0.f, mapWidth), Utility::RandomRange(0.f, mapHeight));
+		//const Craft::Vector2F spawnPoint(Utility::RandomRange(0.f, mapWidth), Utility::RandomRange(0.f, mapHeight));
 
 		Craft::Bounds spawnBounds; 
 		

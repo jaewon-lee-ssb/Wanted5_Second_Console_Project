@@ -38,7 +38,7 @@ private:
 	float mapHeight = 0.f;
 
 	// 적 수 관리
-	int maxEnemyCount = 20;
+	int maxEnemyCount = 1;
 	int curEnemyCount = 0;
 
 	// 맵 약참조

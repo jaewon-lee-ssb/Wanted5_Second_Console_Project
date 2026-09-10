@@ -54,7 +54,10 @@
     <ClCompile Include="Navigation\AStar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utility\Timer.cpp">
+    <ClCompile Include="Utility\Timer\Timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\Timer\PerformanceTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,10 +131,13 @@
     <ClInclude Include="Navigation\AStar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\Timer.h">
+    <ClInclude Include="Utility\Timer\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Physics\RaycastHit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\Timer\PerformanceTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

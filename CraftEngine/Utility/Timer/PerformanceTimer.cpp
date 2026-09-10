@@ -1,4 +1,4 @@
-#include "PerformanceTimer.h"
+﻿#include "PerformanceTimer.h"
 
 #include <ctime>
 #include <fstream>

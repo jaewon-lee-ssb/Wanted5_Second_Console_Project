@@ -1,7 +1,50 @@
 ﻿#include <Navigation/AStar.h>
 
+#include <Utility/Timer/PerformanceTimer.h>
+
 #include <algorithm>
 #include <cstdlib>
+#include <sstream>
+
+#define NOMINMAX
+#include <Windows.h>
+
+namespace
+{
+	struct AStarMetrics
+	{
+		unsigned long long createdNodes = 0;
+		unsigned long long expandedNodes = 0;
+		unsigned long long neighborChecks = 0;
+		unsigned long long openPushes = 0;
+		unsigned long long openPops = 0;
+		unsigned long long openLookupChecks = 0;
+		unsigned long long openLookupHits = 0;
+		unsigned long long closedChecks = 0;
+		unsigned long long costUpdates = 0;
+		size_t peakOpenSize = 0;
+		size_t pathNodeCount = 0;
+		bool pathFound = false;
+
+		std::string ToLogText() const
+		{
+			std::ostringstream output;
+			output << "PathFound=" << (pathFound ? 1 : 0)
+				<< " | PathNodes=" << pathNodeCount
+				<< " | CreatedNodes=" << createdNodes
+				<< " | ExpandedNodes=" << expandedNodes
+				<< " | NeighborChecks=" << neighborChecks
+				<< " | OpenPushes=" << openPushes
+				<< " | OpenPops=" << openPops
+				<< " | OpenLookupChecks=" << openLookupChecks
+				<< " | OpenLookupHits=" << openLookupHits
+				<< " | ClosedChecks=" << closedChecks
+				<< " | CostUpdates=" << costUpdates
+				<< " | PeakOpenSize=" << peakOpenSize;
+			return output.str();
+		}
+	};
+}
 
 namespace Craft
 {
@@ -23,6 +66,10 @@ namespace Craft
 			return {};
 		}
 
+		AStarMetrics metrics;
+		PerformanceTimer timer("AStar::FindPath");
+		timer.SetDetailsProvider([&metrics]() { return metrics.ToLogText(); });
+
 		// 이전에 탐색한 결과 초기화.
 		Clear();
 
@@ -40,6 +87,7 @@ namespace Craft
 		// 시작 / 목표 노드 생성
 		startNode = CreateNode(startPosition);
 		goalNode = CreateNode(goalPosition);
+		metrics.createdNodes += 2;
 
 		// 시작 노드의 비용 계산 및 openList에 추가해 탐색 시작.
 		startNode->gCost = 0.f;
@@ -47,6 +95,8 @@ namespace Craft
 		startNode->fCost = startNode->gCost + startNode->hCost;
 
 		openList.emplace_back(startNode);
+		++metrics.openPushes;
+		metrics.peakOpenSize = std::max(metrics.peakOpenSize, openList.size());
 
 		// 편의를 위해 사전 비용 설정.
 		const float diagonalCost = 1.41421f;
@@ -80,7 +130,10 @@ namespace Craft
 			if (IsDestination(currentNode))
 			{
 				// 이동 경로 제작 후 반환.
-				return ConstructPath(currentNode);
+				std::vector<Vector2I> path = ConstructPath(currentNode);
+				metrics.pathFound = true;
+				metrics.pathNodeCount = path.size();
+				return path;
 			}
 
 			// 현재 노드를 openList에서 제거.
@@ -92,6 +145,8 @@ namespace Craft
 				// openList에서 제거.
 				openList.erase(iterator);
 			}
+			++metrics.openPops;
+			++metrics.expandedNodes;
 
 			// 탐색을 마친 노드를 closedList에 추가.
 			closedList.emplace_back(currentNode);
@@ -99,6 +154,7 @@ namespace Craft
 			// 현재 위치를 기준으로 주변 (8방향)의 이웃노드를 탐색.
 			for (const Direction& direction : directions)
 			{
+				++metrics.neighborChecks;
 				// 현재 노드를 기준으로 인접한 노드의 좌표 계산.
 				// 새로운 좌표(위치) = 현재 위치 + 이동 방향
 				int newX = currentNode->position.x + direction.x;
@@ -110,6 +166,7 @@ namespace Craft
 					continue;
 				}
 
+				++metrics.closedChecks;
 				// 이미 방문한 곳이라면 건너뛰기
 				if (IsInClosedList(newX, newY))
 				{
@@ -132,17 +189,19 @@ namespace Craft
 
 				// 현재 노드를 거쳐서 새로운 위치로 가는데 드는 비용 계산.
 				float newGCost = currentNode->gCost + direction.cost;
-
+				++metrics.openLookupChecks;
 				// 이미 openList에 있는데 비용면에서 더 나은지 확인.
 				Node* openNode = FindOpenNode(newX, newY);
 				if (openNode)
 				{
+					++metrics.openLookupHits;
 					// 비용을 비교.
 					if (newGCost < openNode->gCost)
 					{
 						openNode->gCost = newGCost;
 						openNode->fCost = openNode->gCost + openNode->hCost;
 						openNode->parent = currentNode;
+						++metrics.costUpdates;
 					}
 
 					continue;
@@ -150,6 +209,7 @@ namespace Craft
 				
 				// 이웃노드 생성 및 openList에 추가
 				Node* neighborNode = CreateNode(Vector2I(newX, newY), currentNode);
+				++metrics.createdNodes;
 
 				// 새로운 노드의 비용 계산.
 				neighborNode->gCost = newGCost;
@@ -158,6 +218,7 @@ namespace Craft
 
 				// 새로운 노드를 openList에 추가.
 				openList.emplace_back(neighborNode);
+				++metrics.openPushes;
 
 				// 시각화를 위한 처리
 				// 아직 여기서 해야하는가에 대해 모름
