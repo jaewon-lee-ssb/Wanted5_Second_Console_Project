@@ -55,7 +55,7 @@ namespace Craft
 
 	AStar::~AStar()
 	{
-		Clear();
+		Clear(width, height);
 	}
 
 	// 최적화 필요
@@ -66,12 +66,15 @@ namespace Craft
 			return {};
 		}
 
+		width = mapWidth;
+		height = mapHeight;
+
 		AStarMetrics metrics;
 		PerformanceTimer timer("AStar::FindPath");
 		timer.SetDetailsProvider([&metrics]() { return metrics.ToLogText(); });
 
 		// 이전에 탐색한 결과 초기화.
-		Clear();
+		Clear(width, height);
 
 		if (!IsInRange(startPosition.x, startPosition.y, mapWidth, mapHeight) || !IsInRange(goalPosition.x, goalPosition.y, mapWidth, mapHeight))
 		{
@@ -94,7 +97,9 @@ namespace Craft
 		startNode->hCost = CalculateHeuristic(startPosition, goalPosition);
 		startNode->fCost = startNode->gCost + startNode->hCost;
 
-		openList.emplace_back(startNode);
+		// 시작 노드 오픈리스트에 추가
+		openList.emplace(startNode);
+		openNodeLookup[startNode->position.y][startNode->position.x] = startNode;
 		++metrics.openPushes;
 		metrics.peakOpenSize = std::max(metrics.peakOpenSize, openList.size());
 
@@ -115,16 +120,17 @@ namespace Craft
 		{
 			// openList에서 fCost가 가장 작은 노드를 선택.
 			// 이진힙(heap)을 사용하면 최적화 가능.
-			Node* currentNode = openList[0];
+			Node* currentNode = openList.top();
 			// 순차 도는 방법 최적화 가능.
-			for (Node* node : openList)
-			{
-				// 더 작은 비용의 노드 검색.
-				if (node->fCost < currentNode->fCost || (node->fCost == currentNode->fCost && node->hCost < currentNode->hCost))
-				{
-					currentNode = node;
-				}
-			}
+			//for (Node* node : openList)
+			//{
+			//	// 더 작은 비용의 노드 검색.
+			//	if (node->fCost < currentNode->fCost || (node->fCost == currentNode->fCost && node->hCost < currentNode->hCost))
+			//	{
+			//		currentNode = node;
+			//	}
+			//}
+			
 
 			// 목표 노드인지 확인.
 			if (IsDestination(currentNode))
@@ -138,18 +144,23 @@ namespace Craft
 
 			// 현재 노드를 openList에서 제거.
 			// 방문 처리를 위해.
-			auto iterator = std::find(openList.begin(), openList.end(), currentNode);
-			// 검색에 성공했는지 확인.
-			if (iterator != openList.end())
-			{
-				// openList에서 제거.
-				openList.erase(iterator);
-			}
+			//auto iterator = std::find(openList.begin(), openList.end(), currentNode);
+			//// 검색에 성공했는지 확인.
+			//if (iterator != openList.end())
+			//{
+			//	// openList에서 제거.
+			//	openList.erase(iterator);
+			//}
+			openList.pop();
+			openNodeLookup[currentNode->position.y][currentNode->position.x] = nullptr;
+			closedNodeLookup[currentNode->position.y][currentNode->position.x] = currentNode;
 			++metrics.openPops;
 			++metrics.expandedNodes;
 
 			// 탐색을 마친 노드를 closedList에 추가.
-			closedList.emplace_back(currentNode);
+			//closedList.emplace_back(currentNode);
+
+			closedNodeLookup[currentNode->position.y][currentNode->position.x] = currentNode;
 
 			// 현재 위치를 기준으로 주변 (8방향)의 이웃노드를 탐색.
 			for (const Direction& direction : directions)
@@ -217,7 +228,8 @@ namespace Craft
 				neighborNode->fCost = neighborNode->gCost + neighborNode->hCost;
 
 				// 새로운 노드를 openList에 추가.
-				openList.emplace_back(neighborNode);
+				openList.emplace(neighborNode);
+				openNodeLookup[newY][newX] = neighborNode;
 				++metrics.openPushes;
 
 				// 시각화를 위한 처리
@@ -233,8 +245,13 @@ namespace Craft
 		return {};
 	}
 
-	void AStar::Clear()
+	void AStar::Clear(const int width, const int height)
 	{
+		while (!openList.empty())
+		{
+			openList.pop();
+		}
+
 		// 탐색 과정에서 생성했던 모든 노드 삭제 및 해제
 		for (Node* node : allocatedNodes)
 		{
@@ -243,8 +260,9 @@ namespace Craft
 		}
 
 		allocatedNodes.clear();
-		openList.clear();
-		closedList.clear();
+		
+		openNodeLookup.assign(height, std::vector<Node*>(width, nullptr));
+		closedNodeLookup.assign(height, std::vector<Node*>(width, nullptr));
 
 		startNode = nullptr;
 		goalNode = nullptr;
@@ -331,30 +349,34 @@ namespace Craft
 	{
 		// 같은 좌표의 노드를 OpenList에서 찾기.
 		// 공간을 더쓰면 최적화 가능
-		for (Node* node : openList)
-		{
-			// 죄표 비교
-			if (node->position == Vector2I(x, y))
-			{
-				return node;
-			}
-		}
-		// 없으면
-		return nullptr;
+		//for (Node* node : openList)
+		//{
+		//	// 죄표 비교
+		//	if (node->position == Vector2I(x, y))
+		//	{
+		//		return node;
+		//	}
+		//}
+		//// 없으면
+		//return nullptr;
+
+		return openNodeLookup[y][x];
 	}
 
 	bool AStar::IsInClosedList(int x, int y) const
 	{
 		// 같은 좌표가 ClosedList에 있는지 확인.
-		for (Node* node : closedList)
-		{
-			// 좌표 비교
-			if (node->position == Vector2I(x, y))
-			{
-				return true;
-			}
-		}
-		return false;
+		//for (Node* node : closedList)
+		//{
+		//	// 좌표 비교
+		//	if (node->position == Vector2I(x, y))
+		//	{
+		//		return true;
+		//	}
+		//}
+		//return false;
+		return closedNodeLookup[y][x];
+		
 	}
 	bool AStar::IsDestination(const Node* node) const
 	{

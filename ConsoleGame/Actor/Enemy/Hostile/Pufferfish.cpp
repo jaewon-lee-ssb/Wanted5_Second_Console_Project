@@ -43,8 +43,6 @@ void Pufferfish::Tick(float deltaTime)
 	super::Tick(deltaTime);
 
 
-	//  TODO : 공격 범위 안에 들어왔으면 공격
-
 	// 순찰중이거나 다시 돌아오는중에 플레이어를 찾으면 다시 도망
 	if ((curState == EnemyState::Patrol || curState == EnemyState::Return) && DetectTarget())
 	{
@@ -341,7 +339,7 @@ void Pufferfish::InitEnemy()
 	isDead = false;
 
 	// 감지 범위
-	detectRadius = 150.f;
+	detectRadius = 15000.f;
 	attackRadius = 28.f;
 
 	// 패트롤 범위

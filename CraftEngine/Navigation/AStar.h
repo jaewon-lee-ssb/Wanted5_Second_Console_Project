@@ -4,9 +4,17 @@
 
 #include <functional>
 #include <vector>
+#include <queue>
 
 namespace Craft
 {
+	struct NodeCompare {
+		bool operator()(Node*& left, Node*& right) const
+		{
+			return left->fCost > right->fCost;
+		}
+	};
+
 	class CRAFT_API AStar
 	{
 	private:
@@ -31,7 +39,7 @@ namespace Craft
 
 	private:
 		// 이전탐색에 사용한 정보 및 노드를 정리하는 함수.
-		void Clear();
+		void Clear(const int width, const int height);
 
 		// 노드 생성 전문 함수.
 		Node* CreateNode(const Vector2I& position, Node* parent = nullptr);
@@ -61,12 +69,17 @@ namespace Craft
 		std::vector<Node*> allocatedNodes;
 
 		// 탐색할 노드 목록/ 탐색을 마친 노드 목록
-		std::vector<Node*> openList;
-		std::vector<Node*> closedList;
+		std::priority_queue<Node*, std::vector<Node*>, NodeCompare> openList;
+
+		std::vector<std::vector<Node*>> openNodeLookup;
+		std::vector<std::vector<Node*>> closedNodeLookup;
 
 		// 시작노드 / 목표노드
 		Node* startNode = nullptr;
 		Node* goalNode = nullptr;
+
+		int width = 0;
+		int height = 0;
 	};
 }
 

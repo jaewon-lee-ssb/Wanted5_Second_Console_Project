@@ -146,7 +146,7 @@ void EnemySpawner::SpawnEnemy()
 	
 	//const float enemySpawnIndex = Utility::RandomRange(0.f, 10.f);
 	const float enemySpawnIndex = 8.f;
-	const Craft::Vector2F spawnPoint(130.f, 60.f);
+	const Craft::Vector2F spawnPoint(1652.f, 866.f);
 
 	for (int attempt = 0; attempt < maxAttempts; ++attempt)
 	{

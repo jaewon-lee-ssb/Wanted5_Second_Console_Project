@@ -33,7 +33,7 @@ private:
 	std::vector<std::weak_ptr<ExitZone>> exitZones;
 
 	Utility::Timer gameTimer;
-	bool isDebugMode = false;
+	bool isDebugMode = true;
 	bool hasRequestedEndLevel = false;
 
 	static constexpr float gameDuration = 180.f;
